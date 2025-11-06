@@ -29,6 +29,7 @@ class ThemePalettes {
   static const String terracottaId = 'terracotta';
   static const String monochromeId = 'monochrome';
   static const String docThemeId = 'doc_theme';
+  static const String quackTripId = 'quack_trip';
 
   static const ThemePalette defaultPalette = ThemePalette(
     id: defaultId,
@@ -630,22 +631,92 @@ class ThemePalettes {
       surfaceTint: Color(0xFF00B96B),
     ),
   );
+
+  // QuackTrip Theme - 小黄鸭主题 🦆
+  static const ThemePalette quackTrip = ThemePalette(
+    id: quackTripId,
+    zhName: '小黄鸭',
+    enName: 'QuackTrip',
+    light: ColorScheme(
+      brightness: Brightness.light,
+      primary: Color(0xFFFFC800),        // 鲜亮的小黄鸭黄色
+      onPrimary: Color(0xFF000000),      // 黑色文字（对比更好）
+      primaryContainer: Color(0xFFFFE082), // 浅黄色容器
+      onPrimaryContainer: Color(0xFF3E2D00),
+      secondary: Color(0xFFFF9800),      // 橙黄色作为次要色
+      onSecondary: Color(0xFF000000),
+      secondaryContainer: Color(0xFFFFD180),
+      onSecondaryContainer: Color(0xFF3E2400),
+      tertiary: Color(0xFF00BCD4),       // 天空蓝作为点缀（旅游元素）
+      onTertiary: Color(0xFFFFFFFF),
+      tertiaryContainer: Color(0xFFB3E5FC),
+      onTertiaryContainer: Color(0xFF00364D),
+      error: Color(0xFFD32F2F),
+      onError: Color(0xFFFFFFFF),
+      errorContainer: Color(0xFFFFCDD2),
+      onErrorContainer: Color(0xFF5F0000),
+      surface: Color(0xFFFFFBF5),        // 温暖的米白色背景
+      onSurface: Color(0xFF1C1B16),
+      onSurfaceVariant: Color(0xFF4A4638),
+      outline: Color(0xFF7B7465),
+      outlineVariant: Color(0xFFCDC4B0),
+      shadow: Color(0xFF000000),
+      scrim: Color(0xFF000000),
+      inverseSurface: Color(0xFF32302A),
+      onInverseSurface: Color(0xFFF5EFE7),
+      inversePrimary: Color(0xFFFFD54F),
+      surfaceTint: Color(0xFFFFC800),
+    ),
+    dark: ColorScheme(
+      brightness: Brightness.dark,
+      primary: Color(0xFFFFD54F),        // 深色模式下的柔和黄色
+      onPrimary: Color(0xFF3E2D00),
+      primaryContainer: Color(0xFF5F4300),
+      onPrimaryContainer: Color(0xFFFFE082),
+      secondary: Color(0xFFFFB74D),      // 深色模式橙黄色
+      onSecondary: Color(0xFF3E2400),
+      secondaryContainer: Color(0xFF5C3800),
+      onSecondaryContainer: Color(0xFFFFD180),
+      tertiary: Color(0xFF4DD0E1),       // 深色模式天空蓝
+      onTertiary: Color(0xFF00364D),
+      tertiaryContainer: Color(0xFF004D66),
+      onTertiaryContainer: Color(0xFFB3E5FC),
+      error: Color(0xFFEF5350),
+      onError: Color(0xFF5F0000),
+      errorContainer: Color(0xFF8C1515),
+      onErrorContainer: Color(0xFFFFCDD2),
+      surface: Color(0xFF1C1B16),        // 深色背景
+      onSurface: Color(0xFFE6E1D6),
+      onSurfaceVariant: Color(0xFFCDC4B0),
+      outline: Color(0xFF96907F),
+      outlineVariant: Color(0xFF4A4638),
+      shadow: Color(0xFF000000),
+      scrim: Color(0xFF000000),
+      inverseSurface: Color(0xFFE6E1D6),
+      onInverseSurface: Color(0xFF32302A),
+      inversePrimary: Color(0xFFFFC800),
+      surfaceTint: Color(0xFFFFD54F),
+    ),
+  );
+
   static const List<ThemePalette> all = <ThemePalette>[
-    defaultPalette,
-    blue,
-    green,
-    purple,
-    yellow,
-    smokyRose,
-    terracotta,
-    monochrome,
-    docTheme,
+    quackTrip,    // 小黄鸭主题 - 唯一主题
+    // 其他主题暂时注释（保留代码以便将来使用）
+    // defaultPalette,
+    // blue,
+    // green,
+    // purple,
+    // yellow,
+    // smokyRose,
+    // terracotta,
+    // monochrome,
+    // docTheme,
   ];
 
   static ThemePalette byId(String id) {
     return all.firstWhere(
       (p) => p.id == id,
-      orElse: () => defaultPalette,
+      orElse: () => quackTrip,  // 默认返回小黄鸭主题
     );
   }
 }
