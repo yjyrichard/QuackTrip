@@ -405,7 +405,7 @@ class _AboutPageState extends State<AboutPage> {
                     child: SizedBox(
                       width: 54,
                       height: 54,
-                      child: Image.asset('assets/app_icon.png', fit: BoxFit.cover),
+                      child: Image.asset('assets/QuacktripLogo.png', fit: BoxFit.cover),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -414,14 +414,14 @@ class _AboutPageState extends State<AboutPage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Kelivo',
+                          '去哪鸭 QuackTrip',
                           style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          l10n.aboutPageAppDescription,
+                          '🦆 开源旅游规划AI助手',
                           style: TextStyle(fontSize: 13, color: cs.onSurface.withOpacity(0.65), height: 1.2),
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
@@ -457,43 +457,19 @@ class _AboutPageState extends State<AboutPage> {
             _iosDivider(context),
             _iosNavRow(
               context,
-              icon: Lucide.Earth,
-              label: l10n.aboutPageWebsite,
-              onTap: () async {
-                final uri = Uri.parse('https://kelivo.psycheas.top/');
-                if (!await launchUrl(uri, mode: LaunchMode.platformDefault)) {
-                  await launchUrl(uri, mode: LaunchMode.externalApplication);
-                }
-              },
+              icon: Lucide.Github,
+              label: 'GitHub',
+              detailText: '开源代码仓库',
+              onTap: () => _openUrl('https://github.com/yjyrichard/QuackTrip'),
             ),
             _iosDivider(context),
             _iosNavRow(
               context,
-              icon: Lucide.Github,
-              label: 'GitHub',
-              onTap: () => _openUrl('https://github.com/Chevey339/kelivo'),
+              icon: Lucide.FileText,
+              label: l10n.aboutPageLicense,
+              detailText: 'AGPL-3.0',
+              onTap: () => _openUrl('https://www.gnu.org/licenses/agpl-3.0.html'),
             ),
-            _iosDivider(context),
-          _iosNavRow(
-            context,
-            icon: Lucide.FileText,
-            label: l10n.aboutPageLicense,
-            onTap: () => _openUrl('https://github.com/Chevey339/kelivo/blob/master/LICENSE'),
-          ),
-          _iosDivider(context),
-          _iosNavRowSvgLeading(
-            context,
-            svgAsset: 'assets/icons/tencent-qq.svg',
-            label: l10n.aboutPageJoinQQGroup,
-            onTap: () => _openUrl('https://qm.qq.com/q/OQaXetKssC'),
-          ),
-          _iosDivider(context),
-          _iosNavRowSvgLeading(
-            context,
-            svgAsset: 'assets/icons/discord.svg',
-            label: l10n.aboutPageJoinDiscord,
-            onTap: () => _openUrl('https://discord.gg/Tb8DyvvV5T'),
-          ),
           ]),
 
           const SizedBox(height: 24),

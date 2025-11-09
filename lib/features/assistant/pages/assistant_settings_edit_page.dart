@@ -15,7 +15,7 @@ import 'package:characters/characters.dart';
 import '../../../shared/widgets/emoji_text.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:http/http.dart' as http;
-import '../../../desktop/desktop_context_menu.dart';
+// import '../../../desktop/desktop_context_menu.dart'; // 桌面功能已移除
 import 'package:file_picker/file_picker.dart';
 import '../../../shared/widgets/emoji_picker_dialog.dart';
 import '../../../icons/lucide_adapter.dart';
@@ -5898,6 +5898,9 @@ class _DesktopAssistantBasicPaneState extends State<_DesktopAssistantBasicPane> 
 
   Future<void> _openAssistantAvatarMenu(BuildContext context, Assistant a) async {
     final l10n = AppLocalizations.of(context)!;
+    // 桌面功能已移除 - Desktop anchored menu removed
+    // TODO: Implement mobile avatar selection menu if needed
+    /*
     await showDesktopAnchoredMenu(
       context,
       anchorKey: _avatarKey,
@@ -5953,6 +5956,7 @@ class _DesktopAssistantBasicPaneState extends State<_DesktopAssistantBasicPane> 
       ],
       offset: const Offset(0, 8),
     );
+    */
   }
 
   Future<void> _pickLocalAvatar(BuildContext context, Assistant a) async {

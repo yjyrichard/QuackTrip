@@ -12,14 +12,15 @@ import '../../mcp/pages/mcp_page.dart';
 import '../../assistant/pages/assistant_settings_page.dart';
 import 'about_page.dart';
 import 'tts_services_page.dart';
-import 'sponsor_page.dart';
+// import 'sponsor_page.dart'; // 已移除赞助页面
 import '../../search/pages/search_services_page.dart';
 import '../../backup/pages/backup_page.dart';
 import '../../quick_phrase/pages/quick_phrases_page.dart';
 import 'network_proxy_page.dart';
-import 'package:url_launcher/url_launcher.dart';
-import 'package:share_plus/share_plus.dart';
+// import 'package:url_launcher/url_launcher.dart'; // 已移除，用于文档链接
+// import 'package:share_plus/share_plus.dart'; // 暂不使用
 import '../../../core/services/haptics.dart';
+import '../../tools/pages/tools_test_page.dart';
 
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
@@ -227,6 +228,15 @@ class SettingsPage extends StatelessWidget {
             _iosDivider(context),
             _iosNavRow(
               context,
+              icon: Lucide.Wrench,
+              label: '🦆 工具测试',
+              onTap: () {
+                Navigator.of(context).push(MaterialPageRoute(builder: (_) => const ToolsTestPage()));
+              },
+            ),
+            _iosDivider(context),
+            _iosNavRow(
+              context,
               icon: Lucide.Zap,
               label: l10n.settingsPageQuickPhrase,
               onTap: () {
@@ -304,30 +314,31 @@ class SettingsPage extends StatelessWidget {
                 Navigator.of(context).push(MaterialPageRoute(builder: (_) => const AboutPage()));
               },
             ),
-            _iosDivider(context),
-            _iosNavRow(
-              context,
-              icon: Lucide.Library,
-              label: l10n.settingsPageDocs,
-              onTap: () async {
-                final uri = Uri.parse('https://kelivo.psycheas.top/');
-                if (!await launchUrl(uri, mode: LaunchMode.platformDefault)) {
-                  await launchUrl(uri, mode: LaunchMode.externalApplication);
-                }
-              },
-            ),
-            _iosDivider(context),
-            _iosNavRow(
-              context,
-              icon: Lucide.Heart,
-              label: l10n.settingsPageSponsor,
-              onTap: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(builder: (_) => const SponsorPage()),
-                );
-              },
-            ),
+            // 使用文档和赞助选项已移除
             // _iosDivider(context),
+            // _iosNavRow(
+            //   context,
+            //   icon: Lucide.Library,
+            //   label: l10n.settingsPageDocs,
+            //   onTap: () async {
+            //     final uri = Uri.parse('https://kelivo.psycheas.top/');
+            //     if (!await launchUrl(uri, mode: LaunchMode.platformDefault)) {
+            //       await launchUrl(uri, mode: LaunchMode.externalApplication);
+            //     }
+            //   },
+            // ),
+            // _iosDivider(context),
+            // _iosNavRow(
+            //   context,
+            //   icon: Lucide.Heart,
+            //   label: l10n.settingsPageSponsor,
+            //   onTap: () {
+            //     Navigator.of(context).push(
+            //       MaterialPageRoute(builder: (_) => const SponsorPage()),
+            //     );
+            //   },
+            // ),
+          ]),
             // _iosNavRow(
             //   context,
             //   icon: Lucide.Share2,

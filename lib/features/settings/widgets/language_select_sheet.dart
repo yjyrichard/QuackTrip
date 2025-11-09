@@ -4,8 +4,8 @@ import '../../../icons/lucide_adapter.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/widgets/ios_tactile.dart';
 import '../../../core/services/haptics.dart';
-import '../../../desktop/desktop_context_menu.dart';
-import '../../../desktop/menu_anchor.dart';
+// import '../../../desktop/desktop_context_menu.dart'; // 桌面功能已移除
+// import '../../../desktop/menu_anchor.dart'; // 桌面功能已移除
 
 class LanguageOption {
   final String code;
@@ -22,7 +22,8 @@ class LanguageOption {
 }
 
 const List<LanguageOption> supportedLanguages = [
-  LanguageOption(code: 'zh-CN', displayName: 'Simplified Chinese', displayNameZh: '简体中文', flag: '🇨🇳'),
+  LanguageOption(code: 'zh-CN', displayName: 'Simplified '
+      'Chinese', displayNameZh: '简体中文', flag: '🇨🇳'),
   LanguageOption(code: 'en', displayName: 'English', displayNameZh: 'English', flag: '🇺🇸'),
   LanguageOption(code: 'zh-TW', displayName: 'Traditional Chinese', displayNameZh: '繁體中文', flag: '🇨🇳'),
   LanguageOption(code: 'ja', displayName: 'Japanese', displayNameZh: '日本語', flag: '🇯🇵'),
@@ -85,6 +86,9 @@ Future<LanguageOption?> showLanguageSelector(BuildContext context) async {
   final l10n = AppLocalizations.of(context)!;
   LanguageOption? selected;
   final items = [
+    // 桌面功能已移除 - Desktop menu items removed
+    // TODO: Implement mobile language selection if needed
+    /*
     ...supportedLanguages.map((lang) => DesktopContextMenuItem(
           icon: null,
           label: '${lang.flag} ${_displayNameFor(l10n, lang.code)}',
@@ -101,12 +105,16 @@ Future<LanguageOption?> showLanguageSelector(BuildContext context) async {
       ),
       danger: true,
     ),
+    */
   ];
+  // 桌面功能已移除 - Desktop context menu removed
+  /*
   await showDesktopContextMenuAt(
     context,
     globalPosition: DesktopMenuAnchor.positionOrCenter(context),
     items: items,
   );
+  */
   return selected;
 }
 

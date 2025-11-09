@@ -38,7 +38,7 @@ class _RegisterPageState extends State<RegisterPage> {
     setState(() => _isLoading = true);
 
     final authService = context.read<AuthService>();
-    final success = await authService.register(
+    final errorMessage = await authService.register(
       username: _usernameController.text.trim(),
       password: _passwordController.text,
       email: _emailController.text.trim().isNotEmpty
@@ -53,19 +53,22 @@ class _RegisterPageState extends State<RegisterPage> {
 
     if (!mounted) return;
 
-    if (success) {
+    if (errorMessage == null) {
+      // 注册成功
       showAppSnackBar(
         context,
-        message: '注册成功！',
+        message: '注册成功！欢迎加入去哪鸭',
         type: NotificationType.success,
       );
       // 返回登录页或直接进入主页
       Navigator.of(context).pushReplacementNamed('/home');
     } else {
+      // 注册失败，显示具体错误信息
       showAppSnackBar(
         context,
-        message: '注册失败，用户名可能已存在',
+        message: errorMessage,
         type: NotificationType.error,
+        duration: const Duration(seconds: 4),
       );
     }
   }
@@ -76,198 +79,253 @@ class _RegisterPageState extends State<RegisterPage> {
     final colorScheme = theme.colorScheme;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('注册账户'),
-        centerTitle: true,
-      ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24.0),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                // Icon
-                Icon(
-                  Icons.account_circle,
-                  size: 80,
-                  color: colorScheme.primary,
-                ).animate().scale(duration: 500.ms),
-
-                const SizedBox(height: 32),
-
-                // Username Field
-                TextFormField(
-                  controller: _usernameController,
-                  decoration: InputDecoration(
-                    labelText: '用户名 *',
-                    hintText: '请输入用户名',
-                    prefixIcon: const Icon(Icons.person_outline),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  validator: (value) {
-                    if (value == null || value.trim().isEmpty) {
-                      return '请输入用户名';
-                    }
-                    if (value.trim().length < 3) {
-                      return '用户名至少3个字符';
-                    }
-                    return null;
-                  },
-                  textInputAction: TextInputAction.next,
-                ).animate().slideX(delay: 100.ms, begin: -0.2, duration: 400.ms),
-
-                const SizedBox(height: 16),
-
-                // Nickname Field
-                TextFormField(
-                  controller: _nicknameController,
-                  decoration: InputDecoration(
-                    labelText: '昵称',
-                    hintText: '请输入昵称（可选）',
-                    prefixIcon: const Icon(Icons.badge_outlined),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  textInputAction: TextInputAction.next,
-                ).animate().slideX(delay: 200.ms, begin: -0.2, duration: 400.ms),
-
-                const SizedBox(height: 16),
-
-                // Email Field
-                TextFormField(
-                  controller: _emailController,
-                  keyboardType: TextInputType.emailAddress,
-                  decoration: InputDecoration(
-                    labelText: '邮箱',
-                    hintText: '请输入邮箱（可选）',
-                    prefixIcon: const Icon(Icons.email_outlined),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  validator: (value) {
-                    if (value != null && value.isNotEmpty) {
-                      // 简单的邮箱格式验证
-                      final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
-                      if (!emailRegex.hasMatch(value)) {
-                        return '请输入有效的邮箱地址';
-                      }
-                    }
-                    return null;
-                  },
-                  textInputAction: TextInputAction.next,
-                ).animate().slideX(delay: 300.ms, begin: -0.2, duration: 400.ms),
-
-                const SizedBox(height: 16),
-
-                // Password Field
-                TextFormField(
-                  controller: _passwordController,
-                  obscureText: _obscurePassword,
-                  decoration: InputDecoration(
-                    labelText: '密码 *',
-                    hintText: '请输入密码',
-                    prefixIcon: const Icon(Icons.lock_outline),
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        _obscurePassword ? Icons.visibility_off : Icons.visibility,
-                      ),
-                      onPressed: () {
-                        setState(() => _obscurePassword = !_obscurePassword);
-                      },
-                    ),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return '请输入密码';
-                    }
-                    if (value.length < 6) {
-                      return '密码至少6个字符';
-                    }
-                    return null;
-                  },
-                  textInputAction: TextInputAction.next,
-                ).animate().slideX(delay: 400.ms, begin: -0.2, duration: 400.ms),
-
-                const SizedBox(height: 16),
-
-                // Confirm Password Field
-                TextFormField(
-                  controller: _confirmPasswordController,
-                  obscureText: _obscureConfirmPassword,
-                  decoration: InputDecoration(
-                    labelText: '确认密码 *',
-                    hintText: '请再次输入密码',
-                    prefixIcon: const Icon(Icons.lock_outline),
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        _obscureConfirmPassword ? Icons.visibility_off : Icons.visibility,
-                      ),
-                      onPressed: () {
-                        setState(() => _obscureConfirmPassword = !_obscureConfirmPassword);
-                      },
-                    ),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return '请确认密码';
-                    }
-                    if (value != _passwordController.text) {
-                      return '两次密码输入不一致';
-                    }
-                    return null;
-                  },
-                  onFieldSubmitted: (_) => _handleRegister(),
-                ).animate().slideX(delay: 500.ms, begin: -0.2, duration: 400.ms),
-
-                const SizedBox(height: 32),
-
-                // Register Button
-                FilledButton(
-                  onPressed: _isLoading ? null : _handleRegister,
-                  style: FilledButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  child: _isLoading
-                      ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : const Text(
-                          '注册',
-                          style: TextStyle(fontSize: 16),
-                        ),
-                ).animate().fadeIn(delay: 600.ms).scale(),
-
-                const SizedBox(height: 16),
-
-                // Terms Text
-                Text(
-                  '注册即表示您同意我们的服务条款和隐私政策\n（本地账户，不会上传任何数据）',
-                  textAlign: TextAlign.center,
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: colorScheme.onSurfaceVariant,
-                  ),
-                ).animate().fadeIn(delay: 700.ms),
-              ],
+      appBar: AppBar(title: const Text('注册账户'), centerTitle: true),
+      body: Stack(
+        children: [
+          // 黄色装饰背景
+          Positioned(
+            top: -50,
+            right: -50,
+            child: Container(
+              width: 250,
+              height: 250,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: colorScheme.primary.withOpacity(0.12),
+              ),
             ),
           ),
-        ),
+          Positioned(
+            bottom: -100,
+            left: -100,
+            child: Container(
+              width: 300,
+              height: 300,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: colorScheme.secondary.withOpacity(0.08),
+              ),
+            ),
+          ),
+          // 主要内容
+          SafeArea(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(24.0),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // Icon
+                    Image.asset(
+                      'assets/QuacktripLogo.png',
+                      width: 100,
+                      height: 100,
+                    ).animate().scale(duration: 500.ms),
+
+                    const SizedBox(height: 32),
+
+                    // Username Field
+                    TextFormField(
+                      controller: _usernameController,
+                      decoration: InputDecoration(
+                        labelText: '用户名 *',
+                        hintText: '请输入用户名',
+                        prefixIcon: const Icon(Icons.person_outline),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.trim().isEmpty) {
+                          return '请输入用户名';
+                        }
+                        if (value.trim().length < 3) {
+                          return '用户名至少3个字符';
+                        }
+                        return null;
+                      },
+                      textInputAction: TextInputAction.next,
+                    ).animate().slideX(
+                      delay: 100.ms,
+                      begin: -0.2,
+                      duration: 400.ms,
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    // Nickname Field
+                    TextFormField(
+                      controller: _nicknameController,
+                      decoration: InputDecoration(
+                        labelText: '昵称',
+                        hintText: '请输入昵称（可选）',
+                        prefixIcon: const Icon(Icons.badge_outlined),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      textInputAction: TextInputAction.next,
+                    ).animate().slideX(
+                      delay: 200.ms,
+                      begin: -0.2,
+                      duration: 400.ms,
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    // Email Field
+                    TextFormField(
+                      controller: _emailController,
+                      keyboardType: TextInputType.emailAddress,
+                      decoration: InputDecoration(
+                        labelText: '邮箱',
+                        hintText: '请输入邮箱（可选）',
+                        prefixIcon: const Icon(Icons.email_outlined),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      validator: (value) {
+                        if (value != null && value.isNotEmpty) {
+                          // 简单的邮箱格式验证
+                          final emailRegex = RegExp(
+                            r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+                          );
+                          if (!emailRegex.hasMatch(value)) {
+                            return '请输入有效的邮箱地址';
+                          }
+                        }
+                        return null;
+                      },
+                      textInputAction: TextInputAction.next,
+                    ).animate().slideX(
+                      delay: 300.ms,
+                      begin: -0.2,
+                      duration: 400.ms,
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    // Password Field
+                    TextFormField(
+                      controller: _passwordController,
+                      obscureText: _obscurePassword,
+                      decoration: InputDecoration(
+                        labelText: '密码 *',
+                        hintText: '请输入密码',
+                        prefixIcon: const Icon(Icons.lock_outline),
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            _obscurePassword
+                                ? Icons.visibility_off
+                                : Icons.visibility,
+                          ),
+                          onPressed: () {
+                            setState(
+                              () => _obscurePassword = !_obscurePassword,
+                            );
+                          },
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return '请输入密码';
+                        }
+                        if (value.length < 6) {
+                          return '密码至少6个字符';
+                        }
+                        return null;
+                      },
+                      textInputAction: TextInputAction.next,
+                    ).animate().slideX(
+                      delay: 400.ms,
+                      begin: -0.2,
+                      duration: 400.ms,
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    // Confirm Password Field
+                    TextFormField(
+                      controller: _confirmPasswordController,
+                      obscureText: _obscureConfirmPassword,
+                      decoration: InputDecoration(
+                        labelText: '确认密码 *',
+                        hintText: '请再次输入密码',
+                        prefixIcon: const Icon(Icons.lock_outline),
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            _obscureConfirmPassword
+                                ? Icons.visibility_off
+                                : Icons.visibility,
+                          ),
+                          onPressed: () {
+                            setState(
+                              () => _obscureConfirmPassword =
+                                  !_obscureConfirmPassword,
+                            );
+                          },
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return '请确认密码';
+                        }
+                        if (value != _passwordController.text) {
+                          return '两次密码输入不一致';
+                        }
+                        return null;
+                      },
+                      onFieldSubmitted: (_) => _handleRegister(),
+                    ).animate().slideX(
+                      delay: 500.ms,
+                      begin: -0.2,
+                      duration: 400.ms,
+                    ),
+
+                    const SizedBox(height: 32),
+
+                    // Register Button
+                    FilledButton(
+                      onPressed: _isLoading ? null : _handleRegister,
+                      style: FilledButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: _isLoading
+                          ? const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const Text('注册', style: TextStyle(fontSize: 16)),
+                    ).animate().fadeIn(delay: 600.ms).scale(),
+
+                    const SizedBox(height: 16),
+
+                    // Terms Text
+                    Text(
+                      '注册即表示您同意我们的服务条款和隐私政策\n（本地账户，不会上传任何数据）',
+                      textAlign: TextAlign.center,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                    ).animate().fadeIn(delay: 700.ms),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

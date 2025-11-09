@@ -346,4 +346,33 @@ class TravelDatabaseService {
     final db = await database;
     await db.close();
   }
+
+  // ==================== 开发工具方法 ====================
+
+  /// 清空所有数据（仅用于开发/调试）
+  Future<void> clearAllData() async {
+    final db = await database;
+    await db.delete('itineraries');
+    await db.delete('expenses');
+    await db.delete('attractions');
+    await db.delete('trips');
+    await db.delete('users');
+  }
+
+  /// 删除指定用户
+  Future<int> deleteUser(int userId) async {
+    final db = await database;
+    return await db.delete(
+      'users',
+      where: 'id = ?',
+      whereArgs: [userId],
+    );
+  }
+
+  /// 获取所有用户（仅用于开发/调试）
+  Future<List<UserAccount>> getAllUsers() async {
+    final db = await database;
+    final maps = await db.query('users');
+    return maps.map((map) => UserAccount.fromMap(map)).toList();
+  }
 }

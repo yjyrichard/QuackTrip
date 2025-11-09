@@ -12,9 +12,9 @@ import '../../../shared/widgets/snackbar.dart';
 import '../../../shared/widgets/ios_tactile.dart';
 import '../../../core/services/haptics.dart';
 import '../../../l10n/app_localizations.dart';
-import '../../../desktop/desktop_context_menu.dart';
-import '../../../desktop/menu_anchor.dart';
-import '../../../desktop/select_copy_dialog.dart';
+// import '../../../desktop/desktop_context_menu.dart'; // 桌面功能已移除
+// import '../../../desktop/menu_anchor.dart'; // 桌面功能已移除
+// import '../../../desktop/select_copy_dialog.dart'; // 桌面功能已移除
 
 enum MessageMoreAction { edit, fork, delete, share }
 
@@ -38,6 +38,9 @@ Future<MessageMoreAction?> showMessageMoreSheet(BuildContext context, ChatMessag
   // Desktop: show anchored glass menu near the clicked button
   final l10n = AppLocalizations.of(context)!;
   MessageMoreAction? selected;
+  // 桌面功能已移除 - Desktop context menu removed
+  // TODO: Implement mobile message action menu if needed
+  /*
   await showDesktopContextMenuAt(
     context,
     globalPosition: DesktopMenuAnchor.positionOrCenter(context),
@@ -87,6 +90,7 @@ Future<MessageMoreAction?> showMessageMoreSheet(BuildContext context, ChatMessag
       ),
     ],
   );
+  */
   return selected;
 }
 

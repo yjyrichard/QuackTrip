@@ -12,7 +12,7 @@ import '../../provider/pages/provider_detail_page.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../utils/brand_assets.dart';
 import '../../../shared/widgets/ios_tactile.dart';
-import '../../../desktop/desktop_home_page.dart' show DesktopHomePage;
+// // import '../../../desktop/desktop_home_page.dart' show DesktopHomePage // 桌面功能已移除; // 桌面功能已移除
 
 class ModelSelection {
   final String providerKey;
@@ -1536,7 +1536,9 @@ class _DesktopModelSelectDialogBodyState extends State<_DesktopModelSelectDialog
                   final nav = Navigator.of(context);
                   // Close model dialog first
                   nav.pop();
-                  // Then navigate to DesktopHomePage with Settings tab open and provider preselected
+                  // 桌面功能已移除 - Desktop navigation removed
+                  // TODO: Implement mobile navigation to settings if needed
+                  /*
                   Future.microtask(() {
                     nav.push(
                       PageRouteBuilder(
@@ -1550,6 +1552,7 @@ class _DesktopModelSelectDialogBodyState extends State<_DesktopModelSelectDialog
                       ),
                     );
                   });
+                  */
                 },
               ),
             ),

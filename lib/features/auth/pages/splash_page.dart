@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../core/services/auth_service.dart';
 import 'login_page.dart';
-import '../../home/pages/home_page.dart';
-import '../../../desktop/desktop_home_page.dart';
+import '../../main/pages/main_tab_page.dart';
+// import '../../../desktop/desktop_home_page.dart'; // 桌面功能已移除
 import 'package:flutter/foundation.dart' show defaultTargetPlatform, TargetPlatform, kIsWeb, debugPrint;
 
 /// 启动页面 - 检查登录状态并导航到相应页面
@@ -50,14 +50,10 @@ class _SplashPageState extends State<SplashPage> {
   }
 
   void _navigateToHome() {
-    final isDesktop = !kIsWeb &&
-        (defaultTargetPlatform == TargetPlatform.macOS ||
-            defaultTargetPlatform == TargetPlatform.windows ||
-            defaultTargetPlatform == TargetPlatform.linux);
-
+    // 移动应用统一使用MainTabPage
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(
-        builder: (context) => isDesktop ? const DesktopHomePage() : const HomePage(),
+        builder: (context) => const MainTabPage(),
       ),
     );
   }
@@ -81,10 +77,11 @@ class _SplashPageState extends State<SplashPage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.travel_explore,
-              size: 100,
-              color: colorScheme.primary,
+            // QuackTrip Logo
+            Image.asset(
+              'assets/QuacktripLogo.png',
+              width: 120,
+              height: 120,
             ),
             const SizedBox(height: 24),
             Text(

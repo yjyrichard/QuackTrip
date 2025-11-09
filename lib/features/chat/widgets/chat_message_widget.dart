@@ -30,8 +30,8 @@ import '../../../l10n/app_localizations.dart';
 import '../../../core/providers/settings_provider.dart';
 import '../../../core/providers/model_provider.dart';
 import '../../../shared/widgets/ios_tactile.dart';
-import '../../../desktop/desktop_context_menu.dart';
-import '../../../desktop/menu_anchor.dart';
+// import '../../../desktop/desktop_context_menu.dart'; // 桌面功能已移除
+// import '../../../desktop/menu_anchor.dart'; // 桌面功能已移除
 import '../../../shared/widgets/emoji_text.dart';
 
 class ChatMessageWidget extends StatefulWidget {
@@ -845,7 +845,7 @@ class _ChatMessageWidgetState extends State<ChatMessageWidget> {
                           defaultTargetPlatform == TargetPlatform.windows ||
                           defaultTargetPlatform == TargetPlatform.linux;
                       if (isDesktop) {
-                        try { DesktopMenuAnchor.setPosition(d.globalPosition); } catch (_) {}
+                        // try { DesktopMenuAnchor // 桌面功能已移除.setPosition(d.globalPosition); } catch (_) {}
                       }
                     },
                     onTap: () {
@@ -891,6 +891,9 @@ class _ChatMessageWidgetState extends State<ChatMessageWidget> {
     final l10n = AppLocalizations.of(context)!;
     // Haptic feedback
     try { Haptics.light(); } catch (_) {}
+    // 桌面功能已移除 - Desktop context menu removed
+    // TODO: Implement mobile context menu if needed
+    /*
     await showDesktopContextMenuAt(
       context,
       globalPosition: globalPosition,
@@ -926,6 +929,7 @@ class _ChatMessageWidgetState extends State<ChatMessageWidget> {
         ),
       ],
     );
+    */
   }
 
   void _setAnchorFromKey(GlobalKey key) {
@@ -933,7 +937,7 @@ class _ChatMessageWidgetState extends State<ChatMessageWidget> {
     if (rb == null) return;
     try {
       final center = rb.localToGlobal(Offset(rb.size.width / 2, rb.size.height));
-      DesktopMenuAnchor.setPosition(center);
+      // DesktopMenuAnchor // 桌面功能已移除.setPosition(center);
     } catch (_) {}
   }
 
@@ -1443,7 +1447,7 @@ class _ChatMessageWidgetState extends State<ChatMessageWidget> {
                           defaultTargetPlatform == TargetPlatform.windows ||
                           defaultTargetPlatform == TargetPlatform.linux;
                       if (isDesktop) {
-                        try { DesktopMenuAnchor.setPosition(d.globalPosition); } catch (_) {}
+                        // try { DesktopMenuAnchor // 桌面功能已移除.setPosition(d.globalPosition); } catch (_) {}
                       }
                     },
                     onTap: () {
@@ -1477,7 +1481,7 @@ class _ChatMessageWidgetState extends State<ChatMessageWidget> {
                           defaultTargetPlatform == TargetPlatform.windows ||
                           defaultTargetPlatform == TargetPlatform.linux;
                       if (isDesktop) {
-                        try { DesktopMenuAnchor.setPosition(d.globalPosition); } catch (_) {}
+                        // try { DesktopMenuAnchor // 桌面功能已移除.setPosition(d.globalPosition); } catch (_) {}
                       }
                     },
                     onTap: () {

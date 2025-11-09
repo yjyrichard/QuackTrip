@@ -1,20 +1,20 @@
 flutter_launcher_icons:
   android: true
   ios: true
-  image_path: assets/app_icon_2.png
-  image_path_ios: "assets/app_icon_2.png"
-  image_path_ios_dark_transparent: "assets/app_icon_dark.png"
-  adaptive_icon_background: "#FFFFFF"
-  adaptive_icon_foreground: assets/app_icon_2.png
+  image_path: assets/QuacktripLogo.png
+  image_path_ios: "assets/QuacktripLogo.png"
+  adaptive_icon_background: "#FFC800"
+  adaptive_icon_foreground: assets/QuacktripLogo.png
   min_sdk_android: 21
+  remove_alpha_ios: true
   web:
     generate: true
-    image_path: "assets/app_icon.png"
-    background_color: "#FFFFFF"
+    image_path: "assets/QuacktripLogo.png"
+    background_color: "#FFC800"
   windows:
     generate: true
-    image_path: "assets/app_icon.png"
+    image_path: "assets/QuacktripLogo.png"
     icon_size: 108
   macos:
     generate: true
-    image_path: "assets/app_icon_macos2.png"
+    image_path: "assets/QuacktripLogo.png"

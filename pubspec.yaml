@@ -1,5 +1,5 @@
-name: Kelivo
-description: "An LLM chat client."
+name: QuackTrip
+description: "去哪鸭 - 旅游规划AI助手"
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
@@ -31,11 +31,6 @@ dependencies:
   flutter:
     sdk: flutter
   logging: ^1.2.0
-  
-  # Desktop window control (caption buttons, drag area, title bar style)
-  window_manager: ^0.5.1
-  # Desktop drag-and-drop for files/text
-  desktop_drop: ^0.7.0
 
   # Localizations for Chinese/English UI strings
   flutter_localizations:
@@ -124,7 +119,7 @@ flutter:
   # To add assets to your application, add an assets section, like this:
   assets:
     - assets/icons/
-    - assets/app_icon.png
+    - assets/QuacktripLogo.png
     - assets/mermaid.min.js
   #   - images/a_dot_ham.jpeg
 
@@ -162,9 +157,9 @@ flutter:
 flutter_launcher_icons:
   android: true
   ios: true
-  image_path: assets/app_icon_foreground.png
+  image_path: assets/QuacktripLogo.png
   adaptive_icon_background: "#FFFFFF"
-  adaptive_icon_foreground: assets/app_icon_foreground.png
+  adaptive_icon_foreground: assets/QuacktripLogo.png
   remove_alpha_ios: true
 
 flutter_native_splash:
@@ -177,8 +172,8 @@ flutter_native_splash:
   color_dark: "#000000"
 
   # Center image (re-use app icon foreground)
-  image: assets/start.png
-  image_dark: assets/start.png
+  image: assets/QuacktripLogo.png
+  image_dark: assets/QuacktripLogo.png
 
   # iOS content mode to keep logo centered
   ios_content_mode: center
@@ -187,5 +182,5 @@ flutter_native_splash:
   android_12:
     color: "#FFFFFF"
     color_dark: "#000000"
-    image: assets/start.png
-    image_dark: assets/start.png
+    image: assets/QuacktripLogo.png
+    image_dark: assets/QuacktripLogo.png

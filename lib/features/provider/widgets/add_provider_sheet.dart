@@ -32,7 +32,7 @@ class _AddProviderSheet extends StatefulWidget {
 
 class _AddProviderSheetState extends State<_AddProviderSheet>
     with SingleTickerProviderStateMixin {
-  late final TabController _tab = TabController(length: 3, vsync: this);
+  late final TabController _tab = TabController(length: 7, vsync: this); // 增加到7个tab
 
   @override
   void initState() {
@@ -74,6 +74,30 @@ class _AddProviderSheetState extends State<_AddProviderSheet>
   late final TextEditingController _claudeName = TextEditingController(text: 'Claude');
   late final TextEditingController _claudeKey = TextEditingController();
   late final TextEditingController _claudeBase = TextEditingController(text: 'https://api.anthropic.com/v1');
+
+  // Kimi (Moonshot)
+  bool _kimiEnabled = true;
+  late final TextEditingController _kimiName = TextEditingController(text: 'Kimi');
+  late final TextEditingController _kimiKey = TextEditingController();
+  late final TextEditingController _kimiBase = TextEditingController(text: 'https://api.moonshot.cn/v1');
+
+  // DeepSeek
+  bool _deepseekEnabled = true;
+  late final TextEditingController _deepseekName = TextEditingController(text: 'DeepSeek');
+  late final TextEditingController _deepseekKey = TextEditingController();
+  late final TextEditingController _deepseekBase = TextEditingController(text: 'https://api.deepseek.com/v1');
+
+  // SiliconFlow
+  bool _siliconflowEnabled = true;
+  late final TextEditingController _siliconflowName = TextEditingController(text: 'SiliconFlow');
+  late final TextEditingController _siliconflowKey = TextEditingController();
+  late final TextEditingController _siliconflowBase = TextEditingController(text: 'https://api.siliconflow.cn/v1');
+
+  // Doubao (字节跳动豆包)
+  bool _doubaoEnabled = true;
+  late final TextEditingController _doubaoName = TextEditingController(text: 'Doubao');
+  late final TextEditingController _doubaoKey = TextEditingController();
+  late final TextEditingController _doubaoBase = TextEditingController(text: 'https://ark.cn-beijing.volces.com/api/v3');
 
   Widget _inputRow({required String label, required TextEditingController controller, String? hint, bool obscure = false, bool enabled = true}) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -238,6 +262,74 @@ class _AddProviderSheetState extends State<_AddProviderSheet>
     );
   }
 
+  Widget _kimiForm(AppLocalizations l10n) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _iosCard(children: [
+          _switchRow(label: l10n.addProviderSheetEnabledLabel, value: _kimiEnabled, onChanged: (v) => setState(() => _kimiEnabled = v)),
+        ]),
+        const SizedBox(height: 10),
+        _inputRow(label: l10n.addProviderSheetNameLabel, controller: _kimiName),
+        const SizedBox(height: 10),
+        _inputRow(label: 'API Key', controller: _kimiKey, hint: '从 https://platform.moonshot.cn 获取'),
+        const SizedBox(height: 10),
+        _inputRow(label: 'API Base Url', controller: _kimiBase),
+      ],
+    );
+  }
+
+  Widget _deepseekForm(AppLocalizations l10n) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _iosCard(children: [
+          _switchRow(label: l10n.addProviderSheetEnabledLabel, value: _deepseekEnabled, onChanged: (v) => setState(() => _deepseekEnabled = v)),
+        ]),
+        const SizedBox(height: 10),
+        _inputRow(label: l10n.addProviderSheetNameLabel, controller: _deepseekName),
+        const SizedBox(height: 10),
+        _inputRow(label: 'API Key', controller: _deepseekKey, hint: '从 https://platform.deepseek.com 获取'),
+        const SizedBox(height: 10),
+        _inputRow(label: 'API Base Url', controller: _deepseekBase),
+      ],
+    );
+  }
+
+  Widget _siliconflowForm(AppLocalizations l10n) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _iosCard(children: [
+          _switchRow(label: l10n.addProviderSheetEnabledLabel, value: _siliconflowEnabled, onChanged: (v) => setState(() => _siliconflowEnabled = v)),
+        ]),
+        const SizedBox(height: 10),
+        _inputRow(label: l10n.addProviderSheetNameLabel, controller: _siliconflowName),
+        const SizedBox(height: 10),
+        _inputRow(label: 'API Key', controller: _siliconflowKey, hint: '从 https://siliconflow.cn 获取'),
+        const SizedBox(height: 10),
+        _inputRow(label: 'API Base Url', controller: _siliconflowBase),
+      ],
+    );
+  }
+
+  Widget _doubaoForm(AppLocalizations l10n) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _iosCard(children: [
+          _switchRow(label: l10n.addProviderSheetEnabledLabel, value: _doubaoEnabled, onChanged: (v) => setState(() => _doubaoEnabled = v)),
+        ]),
+        const SizedBox(height: 10),
+        _inputRow(label: l10n.addProviderSheetNameLabel, controller: _doubaoName),
+        const SizedBox(height: 10),
+        _inputRow(label: 'API Key', controller: _doubaoKey, hint: '从火山引擎获取'),
+        const SizedBox(height: 10),
+        _inputRow(label: 'API Base Url', controller: _doubaoBase),
+      ],
+    );
+  }
+
   Future<void> _onAdd() async {
     final settings = context.read<SettingsProvider>();
     String uniqueKey(String prefix, String display) {
@@ -270,6 +362,7 @@ class _AddProviderSheetState extends State<_AddProviderSheet>
     final idx = _tab.index;
     String createdKey = '';
     if (idx == 0) {
+      // OpenAI
       final rawName = _openaiName.text.trim();
       final display = rawName.isEmpty ? 'OpenAI' : rawName;
       final keyName = uniqueKey('OpenAI', display);
@@ -279,7 +372,7 @@ class _AddProviderSheetState extends State<_AddProviderSheet>
         name: display,
         apiKey: _openaiKey.text.trim(),
         baseUrl: _openaiBase.text.trim().isEmpty ? 'https://api.openai.com/v1' : _openaiBase.text.trim(),
-        providerType: ProviderKind.openai,  // Explicitly set as OpenAI type
+        providerType: ProviderKind.openai,
         chatPath: _openaiUseResponse ? null : (_openaiPath.text.trim().isEmpty ? '/chat/completions' : _openaiPath.text.trim()),
         useResponseApi: _openaiUseResponse,
         models: const [],
@@ -293,6 +386,7 @@ class _AddProviderSheetState extends State<_AddProviderSheet>
       await settings.setProviderConfig(keyName, cfg);
       createdKey = keyName;
     } else if (idx == 1) {
+      // Google
       final rawName = _googleName.text.trim();
       final display = rawName.isEmpty ? 'Google' : rawName;
       final keyName = uniqueKey('Google', display);
@@ -302,7 +396,7 @@ class _AddProviderSheetState extends State<_AddProviderSheet>
         name: display,
         apiKey: _googleVertex ? '' : _googleKey.text.trim(),
         baseUrl: _googleVertex ? 'https://aiplatform.googleapis.com' : (_googleBase.text.trim().isEmpty ? 'https://generativelanguage.googleapis.com/v1beta' : _googleBase.text.trim()),
-        providerType: ProviderKind.google,  // Explicitly set as Google type
+        providerType: ProviderKind.google,
         vertexAI: _googleVertex,
         location: _googleVertex ? (_googleLocation.text.trim().isEmpty ? 'us-central1' : _googleLocation.text.trim()) : '',
         projectId: _googleVertex ? _googleProject.text.trim() : '',
@@ -317,7 +411,8 @@ class _AddProviderSheetState extends State<_AddProviderSheet>
       );
       await settings.setProviderConfig(keyName, cfg);
       createdKey = keyName;
-    } else {
+    } else if (idx == 2) {
+      // Claude
       final rawName = _claudeName.text.trim();
       final display = rawName.isEmpty ? 'Claude' : rawName;
       final keyName = uniqueKey('Claude', display);
@@ -327,7 +422,95 @@ class _AddProviderSheetState extends State<_AddProviderSheet>
         name: display,
         apiKey: _claudeKey.text.trim(),
         baseUrl: _claudeBase.text.trim().isEmpty ? 'https://api.anthropic.com/v1' : _claudeBase.text.trim(),
-        providerType: ProviderKind.claude,  // Explicitly set as Claude type
+        providerType: ProviderKind.claude,
+        models: const [],
+        modelOverrides: const {},
+        proxyEnabled: false,
+        proxyHost: '',
+        proxyPort: '8080',
+        proxyUsername: '',
+        proxyPassword: '',
+      );
+      await settings.setProviderConfig(keyName, cfg);
+      createdKey = keyName;
+    } else if (idx == 3) {
+      // Kimi (Moonshot)
+      final rawName = _kimiName.text.trim();
+      final display = rawName.isEmpty ? 'Kimi' : rawName;
+      final keyName = uniqueKey('Kimi', display);
+      final cfg = ProviderConfig(
+        id: keyName,
+        enabled: _kimiEnabled,
+        name: display,
+        apiKey: _kimiKey.text.trim(),
+        baseUrl: _kimiBase.text.trim().isEmpty ? 'https://api.moonshot.cn/v1' : _kimiBase.text.trim(),
+        providerType: ProviderKind.openai,  // Kimi uses OpenAI-compatible API
+        models: const [],
+        modelOverrides: const {},
+        proxyEnabled: false,
+        proxyHost: '',
+        proxyPort: '8080',
+        proxyUsername: '',
+        proxyPassword: '',
+      );
+      await settings.setProviderConfig(keyName, cfg);
+      createdKey = keyName;
+    } else if (idx == 4) {
+      // DeepSeek
+      final rawName = _deepseekName.text.trim();
+      final display = rawName.isEmpty ? 'DeepSeek' : rawName;
+      final keyName = uniqueKey('DeepSeek', display);
+      final cfg = ProviderConfig(
+        id: keyName,
+        enabled: _deepseekEnabled,
+        name: display,
+        apiKey: _deepseekKey.text.trim(),
+        baseUrl: _deepseekBase.text.trim().isEmpty ? 'https://api.deepseek.com/v1' : _deepseekBase.text.trim(),
+        providerType: ProviderKind.openai,  // DeepSeek uses OpenAI-compatible API
+        models: const [],
+        modelOverrides: const {},
+        proxyEnabled: false,
+        proxyHost: '',
+        proxyPort: '8080',
+        proxyUsername: '',
+        proxyPassword: '',
+      );
+      await settings.setProviderConfig(keyName, cfg);
+      createdKey = keyName;
+    } else if (idx == 5) {
+      // SiliconFlow
+      final rawName = _siliconflowName.text.trim();
+      final display = rawName.isEmpty ? 'SiliconFlow' : rawName;
+      final keyName = uniqueKey('SiliconFlow', display);
+      final cfg = ProviderConfig(
+        id: keyName,
+        enabled: _siliconflowEnabled,
+        name: display,
+        apiKey: _siliconflowKey.text.trim(),
+        baseUrl: _siliconflowBase.text.trim().isEmpty ? 'https://api.siliconflow.cn/v1' : _siliconflowBase.text.trim(),
+        providerType: ProviderKind.openai,  // SiliconFlow uses OpenAI-compatible API
+        models: const [],
+        modelOverrides: const {},
+        proxyEnabled: false,
+        proxyHost: '',
+        proxyPort: '8080',
+        proxyUsername: '',
+        proxyPassword: '',
+      );
+      await settings.setProviderConfig(keyName, cfg);
+      createdKey = keyName;
+    } else if (idx == 6) {
+      // Doubao (字节跳动豆包)
+      final rawName = _doubaoName.text.trim();
+      final display = rawName.isEmpty ? 'Doubao' : rawName;
+      final keyName = uniqueKey('Doubao', display);
+      final cfg = ProviderConfig(
+        id: keyName,
+        enabled: _doubaoEnabled,
+        name: display,
+        apiKey: _doubaoKey.text.trim(),
+        baseUrl: _doubaoBase.text.trim().isEmpty ? 'https://ark.cn-beijing.volces.com/api/v3' : _doubaoBase.text.trim(),
+        providerType: ProviderKind.openai,  // Doubao uses OpenAI-compatible API
         models: const [],
         modelOverrides: const {},
         proxyEnabled: false,
@@ -404,7 +587,7 @@ class _AddProviderSheetState extends State<_AddProviderSheet>
               const SizedBox(height: 8),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: _SegTabBar(controller: _tab, tabs: const ['OpenAI', 'Google', 'Claude']),
+                child: _SegTabBar(controller: _tab, tabs: const ['OpenAI', 'Google', 'Claude', 'Kimi', 'DeepSeek', 'SiliconFlow', 'Doubao']),
               ),
               const SizedBox(height: 12),
               Expanded(
@@ -422,6 +605,10 @@ class _AddProviderSheetState extends State<_AddProviderSheet>
                               if (idx == 0) _openaiForm(l10n),
                               if (idx == 1) _googleForm(l10n),
                               if (idx == 2) _claudeForm(l10n),
+                              if (idx == 3) _kimiForm(l10n),
+                              if (idx == 4) _deepseekForm(l10n),
+                              if (idx == 5) _siliconflowForm(l10n),
+                              if (idx == 6) _doubaoForm(l10n),
                             ],
                           );
                         },

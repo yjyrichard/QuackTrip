@@ -17,7 +17,7 @@ import '../../../core/providers/update_provider.dart';
 import '../../../core/models/assistant.dart';
 import '../../assistant/pages/assistant_settings_edit_page.dart';
 import '../../chat/pages/chat_history_page.dart';
-import '../../../desktop/chat_history_dialog.dart';
+// import '../../../desktop/chat_history_dialog.dart'; // 桌面功能已移除
 import 'package:flutter/services.dart';
 import 'dart:io' show File;
 import 'dart:math' as math;
@@ -33,8 +33,8 @@ import '../../../utils/avatar_cache.dart';
 import 'dart:ui' as ui;
 import '../../../shared/widgets/ios_tactile.dart';
 import '../../../core/services/haptics.dart';
-import '../../../desktop/desktop_context_menu.dart';
-import '../../../desktop/menu_anchor.dart';
+// import '../../../desktop/desktop_context_menu.dart'; // 桌面功能已移除
+// import '../../../desktop/menu_anchor.dart'; // 桌面功能已移除
 import '../../../shared/widgets/emoji_text.dart';
 import '../../../core/providers/tag_provider.dart';
 import '../../assistant/pages/tags_manager_page.dart';
@@ -228,70 +228,7 @@ class _SideDrawerState extends State<SideDrawer> with TickerProviderStateMixin {
         defaultTargetPlatform == TargetPlatform.windows ||
         defaultTargetPlatform == TargetPlatform.linux;
 
-    if (isDesktop) {
-      // Desktop: glass anchored menu near cursor/button
-      Offset pos = anchor ?? DesktopMenuAnchor.positionOrCenter(context);
-      await showDesktopContextMenuAt(
-        context,
-        globalPosition: pos,
-        items: [
-          DesktopContextMenuItem(
-            icon: Lucide.Edit,
-            label: l10n.sideDrawerMenuRename,
-            onTap: () async { await _renameChat(context, chat); },
-          ),
-          DesktopContextMenuItem(
-            icon: Lucide.Pin,
-            label: isPinned ? l10n.sideDrawerMenuUnpin : l10n.sideDrawerMenuPin,
-            onTap: () async { await chatService.togglePinConversation(chat.id); },
-          ),
-          DesktopContextMenuItem(
-            icon: Lucide.RefreshCw,
-            label: l10n.sideDrawerMenuRegenerateTitle,
-            onTap: () async { await _regenerateTitle(context, chat.id); },
-          ),
-          DesktopContextMenuItem(
-            icon: Lucide.Trash2,
-            label: l10n.sideDrawerMenuDelete,
-            danger: true,
-            onTap: () async {
-              final deletingCurrent = chatService.currentConversationId == chat.id;
-              // Pre-compute next recent conversation for current assistant
-              String? nextId;
-              try {
-                final ap = context.read<AssistantProvider>();
-                final currentAid = ap.currentAssistantId;
-                if (currentAid != null) {
-                  final all = chatService.getAllConversations();
-                  final candidates = all
-                      .where((c) => c.assistantId == currentAid && c.id != chat.id)
-                      .toList()
-                    ..sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
-                  if (candidates.isNotEmpty) nextId = candidates.first.id;
-                }
-              } catch (_) {}
-              await chatService.deleteConversation(chat.id);
-              showAppSnackBar(
-                context,
-                message: l10n.sideDrawerDeleteSnackbar(chat.title),
-                type: NotificationType.success,
-                duration: const Duration(seconds: 3),
-              );
-              if (deletingCurrent || chatService.currentConversationId == null) {
-                if (nextId != null) {
-                  widget.onSelectConversation?.call(nextId!);
-                } else {
-                  widget.onNewConversation?.call();
-                }
-              }
-              Navigator.of(context).maybePop();
-            },
-          ),
-        ],
-      );
-      return;
-    }
-
+    // 移动端使用底部弹出菜单
     await showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -747,10 +684,11 @@ class _SideDrawerState extends State<SideDrawer> with TickerProviderStateMixin {
                                     icon: Lucide.History,
                                     padding: const EdgeInsets.all(4),
                                     onTap: () async {
-                                      final selectedId = await showChatHistoryDesktopDialog(context, assistantId: currentAssistantId);
-                                      if (selectedId != null && selectedId.isNotEmpty) {
-                                        widget.onSelectConversation?.call(selectedId);
-                                      }
+                                      // 桌面功能已移除: showChatHistoryDesktopDialog
+                                      // final selectedId = await showChatHistoryDesktopDialog(context, assistantId: currentAssistantId);
+                                      // if (selectedId != null && selectedId.isNotEmpty) {
+                                      //   widget.onSelectConversation?.call(selectedId);
+                                      // }
                                     },
                                   ),
                                 ),
@@ -1166,61 +1104,7 @@ class _SideDrawerState extends State<SideDrawer> with TickerProviderStateMixin {
 extension on _SideDrawerState {
   Future<void> _showAssistantItemMenuDesktop(Assistant a, Offset globalPosition) async {
     if (!_isDesktop) return;
-    final l10n = AppLocalizations.of(context)!;
-    final tp = context.read<TagProvider>();
-    final hasTag = tp.tagOfAssistant(a.id) != null;
-    await showDesktopContextMenuAt(
-      context,
-      globalPosition: globalPosition,
-      items: [
-        DesktopContextMenuItem(
-          icon: Lucide.Pencil,
-          label: l10n.assistantTagsContextMenuEditAssistant,
-          onTap: () => _openAssistantSettings(a.id),
-        ),
-        if (hasTag)
-          DesktopContextMenuItem(
-            icon: Lucide.Eraser,
-            label: l10n.assistantTagsClearTag,
-            onTap: () async {
-              await context.read<TagProvider>().unassignAssistant(a.id);
-            },
-          ),
-        DesktopContextMenuItem(
-          icon: Lucide.Bookmark,
-          label: l10n.assistantTagsContextMenuManageTags,
-          onTap: () async {
-            _closeAssistantPicker();
-            await showAssistantTagsManagerDialog(context, assistantId: a.id);
-          },
-        ),
-        DesktopContextMenuItem(
-          icon: Lucide.Trash2,
-          label: l10n.assistantTagsContextMenuDeleteAssistant,
-          danger: true,
-          onTap: () async {
-            final confirmed = await showDialog<bool>(
-              context: context,
-              builder: (ctx) => AlertDialog(
-                title: Text(l10n.assistantSettingsDeleteDialogTitle),
-                content: Text(l10n.assistantSettingsDeleteDialogContent),
-                actions: [
-                  TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: Text(l10n.assistantSettingsDeleteDialogCancel)),
-                  TextButton(onPressed: () => Navigator.of(ctx).pop(true), child: Text(l10n.assistantSettingsDeleteDialogConfirm)),
-                ],
-              ),
-            );
-            if (confirmed != true) return;
-            final ok = await context.read<AssistantProvider>().deleteAssistant(a.id);
-            if (!ok) {
-              showAppSnackBar(context, message: l10n.assistantSettingsAtLeastOneAssistantRequired, type: NotificationType.warning);
-            } else {
-              try { await context.read<TagProvider>().unassignAssistant(a.id); } catch (_) {}
-            }
-          },
-        ),
-      ],
-    );
+    // 桌面功能已移除: 整个桌面上下文菜单功能已禁用
   }
 
   Future<void> _showAssistantItemMenuMobile(Assistant a) async {

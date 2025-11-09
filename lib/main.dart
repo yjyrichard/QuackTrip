@@ -4,12 +4,13 @@ import 'package:flutter/foundation.dart' show kIsWeb, defaultTargetPlatform, Tar
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'l10n/app_localizations.dart';
 import 'features/home/pages/home_page.dart';
+import 'features/main/pages/main_tab_page.dart';
 import 'features/auth/pages/splash_page.dart';
 import 'features/auth/pages/login_page.dart';
-import 'desktop/desktop_home_page.dart';
+// import 'desktop/desktop_home_page.dart'; // 桌面功能已移除
 import 'package:flutter/services.dart';
-import 'package:window_manager/window_manager.dart';
-import 'desktop/desktop_window_controller.dart';
+// import 'package:window_manager/window_manager.dart'; // 桌面功能已移除
+// import 'desktop/desktop_window_controller.dart'; // 桌面功能已移除
 // import 'package:logging/logging.dart' as logging;
 // Theme is now managed in SettingsProvider
 import 'theme/theme_factory.dart';
@@ -63,16 +64,16 @@ runApp(const MyApp());
 
 Future<void> _initDesktopWindow() async {
   if (kIsWeb) return;
-  try {
-    if (defaultTargetPlatform == TargetPlatform.windows) {
-      await windowManager.ensureInitialized();
-      await windowManager.setTitleBarStyle(TitleBarStyle.hidden);
-    }
-    // Initialize and show desktop window with persisted size/position
-    await DesktopWindowController.instance.initializeAndShow(title: 'Kelivo');
-  } catch (_) {
-    // Ignore on unsupported platforms.
-  }
+  // 桌面窗口功能已移除（移动应用不需要）
+  // try {
+  //   if (defaultTargetPlatform == TargetPlatform.windows) {
+  //     await windowManager.ensureInitialized();
+  //     await windowManager.setTitleBarStyle(TitleBarStyle.hidden);
+  //   }
+  //   await DesktopWindowController.instance.initializeAndShow(title: 'Kelivo');
+  // } catch (_) {
+  //   // Ignore on unsupported platforms.
+  // }
 }
 
 Future<void> _preloadDesktopSystemFonts() async {
@@ -286,11 +287,12 @@ class MyApp extends StatelessWidget {
 
 Widget _selectHome() {
   // Mobile remains the default platform. Desktop is an added platform.
-  if (kIsWeb) return const HomePage();
+  if (kIsWeb) return const MainTabPage();
   final isDesktop = defaultTargetPlatform == TargetPlatform.macOS ||
       defaultTargetPlatform == TargetPlatform.windows ||
       defaultTargetPlatform == TargetPlatform.linux;
-  return isDesktop ? const DesktopHomePage() : const HomePage();
+  // 桌面功能已移除，统一使用移动端界面
+  return const MainTabPage();
 }
  
 // Overrides logic is implemented within SettingsProvider now.

@@ -9,7 +9,7 @@ import '../../models/token_usage.dart';
 import '../../../utils/sandbox_path_resolver.dart';
 import 'google_service_account_auth.dart';
 import '../../services/api_key_manager.dart';
-import 'package:Kelivo/secrets/fallback.dart';
+import 'package:QuackTrip/secrets/fallback.dart'; //如果这一行报错 是因为IDE的缓存问题不必理会
 
 class ChatApiService {
   static String _apiKeyForRequest(ProviderConfig cfg, String modelId) {

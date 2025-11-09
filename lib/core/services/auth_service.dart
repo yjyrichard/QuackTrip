@@ -52,7 +52,8 @@ class AuthService extends ChangeNotifier {
   }
 
   /// 注册新用户
-  Future<bool> register({
+  /// 返回：null=成功，其他=错误信息
+  Future<String?> register({
     required String username,
     required String password,
     String? email,
@@ -62,7 +63,7 @@ class AuthService extends ChangeNotifier {
       // 检查用户名是否已存在
       final existingUser = await _db.getUserByUsername(username);
       if (existingUser != null) {
-        return false; // 用户名已存在
+        return '用户名"$username"已被注册，请换一个试试'; // 返回具体错误
       }
 
       // 创建新用户
@@ -79,10 +80,10 @@ class AuthService extends ChangeNotifier {
       // 自动登录
       await _saveLoginState(createdUser);
 
-      return true;
+      return null; // 成功
     } catch (e) {
       debugPrint('Register error: $e');
-      return false;
+      return '注册失败：$e';
     }
   }
 

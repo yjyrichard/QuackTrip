@@ -35,18 +35,18 @@ import '../../settings/widgets/language_select_sheet.dart';
 import '../../chat/widgets/message_more_sheet.dart';
 // import '../../chat/pages/message_edit_page.dart';
 import '../../chat/widgets/message_edit_sheet.dart';
-import '../../../desktop/message_edit_dialog.dart';
+// import '../../../desktop/message_edit_dialog.dart'; // 桌面功能已移除
 import '../../chat/widgets/message_export_sheet.dart';
 import '../../assistant/widgets/mcp_assistant_sheet.dart';
 import '../../mcp/pages/mcp_page.dart';
 import '../../provider/pages/providers_page.dart';
 import '../../chat/widgets/reasoning_budget_sheet.dart';
 import '../../search/widgets/search_settings_sheet.dart';
-import '../../../desktop/search_provider_popover.dart';
-import '../../../desktop/reasoning_budget_popover.dart';
-import '../../../desktop/mcp_servers_popover.dart';
+// import '../../../desktop/search_provider_popover.dart'; // 桌面功能已移除
+// import '../../../desktop/reasoning_budget_popover.dart'; // 桌面功能已移除
+// import '../../../desktop/mcp_servers_popover.dart'; // 桌面功能已移除
 import '../widgets/mini_map_sheet.dart';
-import '../../../desktop/mini_map_popover.dart';
+// import '../../../desktop/mini_map_popover.dart'; // 桌面功能已移除
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -58,7 +58,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:file_picker/file_picker.dart';
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
-import 'package:desktop_drop/desktop_drop.dart';
+// import 'package:desktop_drop/desktop_drop.dart'; // 桌面拖放功能已移除
 import '../../../core/services/search/search_tool_service.dart';
 import '../../../utils/markdown_media_sanitizer.dart';
 import '../../../core/services/learning_mode_store.dart';
@@ -72,7 +72,7 @@ import '../../../core/providers/quick_phrase_provider.dart';
 import '../../quick_phrase/widgets/quick_phrase_menu.dart';
 import '../../quick_phrase/pages/quick_phrases_page.dart';
 import '../../../shared/widgets/ios_checkbox.dart';
-import '../../../desktop/quick_phrase_popover.dart';
+// import '../../../desktop/quick_phrase_popover.dart'; // 桌面功能已移除
 import '../../../utils/app_directories.dart';
 
 
@@ -203,29 +203,13 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
   bool _desktopUiInited = false;
   
   void _openSearchSettings() {
-    // On desktop platforms show the floating popover; mobile keeps bottom sheet
-    try {
-      if (Platform.isMacOS || Platform.isWindows || Platform.isLinux) {
-        showDesktopSearchProviderPopover(context, anchorKey: _inputBarKey);
-      } else {
-        showSearchSettingsSheet(context);
-      }
-    } catch (_) {
-      // Fallback in case Platform.* is not available
-      showSearchSettingsSheet(context);
-    }
+    // 移动端使用底部弹出表单
+    showSearchSettingsSheet(context);
   }
 
   Future<void> _openReasoningSettings() async {
-    try {
-      if (Platform.isMacOS || Platform.isWindows || Platform.isLinux) {
-        await showDesktopReasoningBudgetPopover(context, anchorKey: _inputBarKey);
-      } else {
-        await showReasoningBudgetSheet(context);
-      }
-    } catch (_) {
-      await showReasoningBudgetSheet(context);
-    }
+    // 移动端使用底部弹出表单
+    await showReasoningBudgetSheet(context);
   }
 
   // Drawer haptics for swipe-open
@@ -1151,50 +1135,9 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     } catch (_) {}
   }
 
-  // Wraps a widget with desktop DropTarget to accept drag-and-drop files
+  // 桌面拖放功能已移除，移动端直接返回子widget
   Widget _wrapWithDropTarget(Widget child) {
-    if (!_isDesktopPlatform) return child;
-    return DropTarget(
-      onDragEntered: (_) {
-        setState(() => _isDragHovering = true);
-      },
-      onDragExited: (_) {
-        setState(() => _isDragHovering = false);
-      },
-      onDragDone: (details) async {
-        setState(() => _isDragHovering = false);
-        try {
-          final files = details.files; // List<XFile>
-          await _onFilesDroppedDesktop(files);
-        } catch (_) {}
-      },
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          child,
-          if (_isDragHovering)
-            IgnorePointer(
-              child: Container(
-                color: Colors.black.withOpacity(0.12),
-                child: Center(
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.surface.withOpacity(0.95),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Theme.of(context).colorScheme.primary.withOpacity(0.4), width: 2),
-                    ),
-                    child: Text(
-                      AppLocalizations.of(context)!.homePageDropToUpload,
-                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-        ],
-      ),
-    );
+    return child;
   }
 
   Future<void> _createNewConversation() async {
@@ -1237,6 +1180,25 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
         }
       }
     } catch (_) {}
+    // Add QuackTrip welcome message for new conversations
+    if (_messages.isEmpty && _currentConversation != null) {
+      try {
+        final welcomeMsg = await _chatService.addMessage(
+          conversationId: _currentConversation!.id,
+          role: 'assistant',
+          content: '嘎~ 你好呀！我是去哪鸭（QuackTrip），你的旅游规划小助手！🦆\n\n'
+              '我可以帮你：\n'
+              '• 规划旅行行程和路线\n'
+              '• 推荐热门景点和美食\n'
+              '• 估算旅游预算\n'
+              '• 解答旅游相关问题\n\n'
+              '快告诉我你想去哪里玩吧，嘎~ 🌍✨',
+        );
+        if (mounted) {
+          setState(() { _messages.add(welcomeMsg); });
+        }
+      } catch (_) {}
+    }
     _scrollToBottomSoon();
   }
 
@@ -3166,23 +3128,11 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     _dismissKeyboard();
     
     QuickPhrase? selected;
-    try {
-      if (Platform.isMacOS || Platform.isWindows || Platform.isLinux) {
-        selected = await showDesktopQuickPhrasePopover(context, anchorKey: _inputBarKey, phrases: allAvailable);
-      } else {
-        selected = await showQuickPhraseMenu(
-          context: context,
-          phrases: allAvailable,
-          position: position,
-        );
-      }
-    } catch (_) {
-      selected = await showQuickPhraseMenu(
-        context: context,
-        phrases: allAvailable,
-        position: position,
-      );
-    }
+    selected = await showQuickPhraseMenu(
+      context: context,
+      phrases: allAvailable,
+      position: position,
+    );
 
     if (selected != null && mounted) {
       // Insert content at cursor position
@@ -3598,10 +3548,10 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
           statusBarIconBrightness: Brightness.dark,
           statusBarBrightness: Brightness.light,
         ),
-        backgroundColor: Colors.transparent,
-        surfaceTintColor: Colors.transparent,
-        elevation: 0,
-        scrolledUnderElevation: 0,
+        backgroundColor: cs.primary,
+        surfaceTintColor: cs.primary,
+        elevation: 2,
+        scrolledUnderElevation: 4,
         leading: Builder(builder: (context) {
           return IosIconButton(
             size: 20,
@@ -3664,16 +3614,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
             minSize: 44,
             onTap: () async {
               final collapsed = _collapseVersions(_messages);
-              String? selectedId;
-              try {
-                if (Platform.isMacOS || Platform.isWindows || Platform.isLinux) {
-                  selectedId = await showDesktopMiniMapPopover(context, anchorKey: _inputBarKey, messages: collapsed);
-                } else {
-                  selectedId = await showMiniMapSheet(context, collapsed);
-                }
-              } catch (_) {
-                selectedId = await showMiniMapSheet(context, collapsed);
-              }
+              final selectedId = await showMiniMapSheet(context, collapsed);
               if (!mounted) return;
               if (selectedId != null && selectedId.isNotEmpty) {
                 await _scrollToMessageId(selectedId);
@@ -3756,6 +3697,20 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
               ),
             );
           }),
+          // QuackTrip watermark logo in center
+          Positioned.fill(
+            child: Center(
+              child: Opacity(
+                opacity: 0.05,
+                child: Image.asset(
+                  'assets/QuacktripLogo.png',
+                  width: 200,
+                  height: 200,
+                  fit: BoxFit.contain,
+                ),
+              ),
+            ),
+          ),
           // Main column content
           Padding(
             padding: EdgeInsets.only(top: kToolbarHeight + MediaQuery.of(context).padding.top),
@@ -3935,7 +3890,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                                         defaultTargetPlatform == TargetPlatform.windows ||
                                         defaultTargetPlatform == TargetPlatform.linux;
                                     final edited = isDesktop
-                                        ? await showMessageEditDesktopDialog(context, message: message)
+                                        ? await showMessageEditSheet(context, message: message)
                                         : await showMessageEditSheet(context, message: message);
                                     if (edited != null) {
                                       final newMsg = await _chatService.appendMessageVersion(messageId: message.id, content: edited);
@@ -4024,7 +3979,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                                       defaultTargetPlatform == TargetPlatform.windows ||
                                       defaultTargetPlatform == TargetPlatform.linux;
                                   final edited = isDesktop
-                                      ? await showMessageEditDesktopDialog(context, message: message)
+                                      ? await showMessageEditSheet(context, message: message)
                                       : await showMessageEditSheet(context, message: message);
                                   if (edited != null) {
                                     final newMsg = await _chatService.appendMessageVersion(messageId: message.id, content: edited);
@@ -4233,15 +4188,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                         onOpenMcp: () {
                           final a = context.read<AssistantProvider>().currentAssistant;
                           if (a != null) {
-                            try {
-                              if (Platform.isMacOS || Platform.isWindows || Platform.isLinux) {
-                                showDesktopMcpServersPopover(context, anchorKey: _inputBarKey, assistantId: a.id);
-                              } else {
-                                showAssistantMcpSheet(context, assistantId: a.id);
-                              }
-                            } catch (_) {
-                              showAssistantMcpSheet(context, assistantId: a.id);
-                            }
+                            showAssistantMcpSheet(context, assistantId: a.id);
                           }
                         },
                         onLongPressMcp: () {
@@ -4953,7 +4900,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                                                                 defaultTargetPlatform == TargetPlatform.windows ||
                                                                 defaultTargetPlatform == TargetPlatform.linux;
                                                             final edited = isDesktop
-                                                                ? await showMessageEditDesktopDialog(context, message: message)
+                                                                ? await showMessageEditSheet(context, message: message)
                                                                 : await showMessageEditSheet(context, message: message);
                                                             if (edited != null) {
                                                               final newMsg = await _chatService.appendMessageVersion(messageId: message.id, content: edited);
@@ -5033,7 +4980,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                                                             defaultTargetPlatform == TargetPlatform.windows ||
                                                             defaultTargetPlatform == TargetPlatform.linux;
                                                         final edited = isDesktop
-                                                            ? await showMessageEditDesktopDialog(context, message: message)
+                                                            ? await showMessageEditSheet(context, message: message)
                                                             : await showMessageEditSheet(context, message: message);
                                                         if (edited != null) {
                                                           final newMsg = await _chatService.appendMessageVersion(messageId: message.id, content: edited);
@@ -5237,15 +5184,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                                     onOpenMcp: () {
                                       final a = context.read<AssistantProvider>().currentAssistant;
                                       if (a != null) {
-                                        try {
-                                          if (Platform.isMacOS || Platform.isWindows || Platform.isLinux) {
-                                            showDesktopMcpServersPopover(context, anchorKey: _inputBarKey, assistantId: a.id);
-                                          } else {
-                                            showAssistantMcpSheet(context, assistantId: a.id);
-                                          }
-                                        } catch (_) {
-                                          showAssistantMcpSheet(context, assistantId: a.id);
-                                        }
+                                        showAssistantMcpSheet(context, assistantId: a.id);
                                       }
                                     },
                                     onLongPressMcp: () {
@@ -5272,16 +5211,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                                     showMiniMapButton: true,
                                     onOpenMiniMap: () async {
                                       final collapsed = _collapseVersions(_messages);
-                                      String? selectedId;
-                                      try {
-                                        if (Platform.isMacOS || Platform.isWindows || Platform.isLinux) {
-                                          selectedId = await showDesktopMiniMapPopover(context, anchorKey: _inputBarKey, messages: collapsed);
-                                        } else {
-                                          selectedId = await showMiniMapSheet(context, collapsed);
-                                        }
-                                      } catch (_) {
-                                        selectedId = await showMiniMapSheet(context, collapsed);
-                                      }
+                                      final selectedId = await showMiniMapSheet(context, collapsed);
                                       if (selectedId != null && selectedId.isNotEmpty) {
                                         await _scrollToMessageId(selectedId);
                                       }
