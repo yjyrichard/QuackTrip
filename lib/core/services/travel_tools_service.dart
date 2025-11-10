@@ -8,6 +8,8 @@ import '../../secrets/api_keys.dart';
 class TravelToolsService {
   // ========== 和风天气 ==========
   static const String qweatherKey = ApiKeys.qweather;
+  // 自定义域名用于所有API查询
+  static const String qweatherDomain = ApiKeys.qweatherCustomDomain;
 
   /// 获取城市天气信息
   /// [city] 城市名称，例如：广州、北京
@@ -20,18 +22,24 @@ class TravelToolsService {
       }
 
       // 1. 先通过城市名获取Location ID
-      final locationUrl = 'https://geoapi.qweather.com/v2/city/lookup'
+      final locationUrl = '$qweatherDomain/geo/v2/city/lookup'
           '?location=${Uri.encodeComponent(city)}'
           '&key=$qweatherKey';
 
       print('🔍 正在查询城市: $city');
-      print('🌐 请求URL: $locationUrl');
+      print('🌐 城市查询URL: $locationUrl');
 
       final locRes = await http.get(Uri.parse(locationUrl));
-      final locData = jsonDecode(locRes.body);
 
-      print('📍 城市查询响应: ${locRes.statusCode}');
+      print('📍 城市查询响应码: ${locRes.statusCode}');
+      print('📄 响应体长度: ${locRes.body.length}');
       print('📄 响应内容: ${locRes.body}');
+
+      if (locRes.body.isEmpty) {
+        return '❌ 城市查询API返回空响应';
+      }
+
+      final locData = jsonDecode(locRes.body);
 
       if (locData['code'] == '401') {
         return '❌ API Key无效或已过期\n错误代码：${locData['code']}\n请检查和风天气API Key是否正确\n申请地址：https://dev.qweather.com/';
@@ -54,7 +62,7 @@ class TravelToolsService {
       print('✅ 找到城市: $locationName ($adm2, $adm1), ID: $locationId');
 
       // 2. 获取实时天气
-      final weatherUrl = 'https://devapi.qweather.com/v7/weather/now'
+      final weatherUrl = '$qweatherDomain/v7/weather/now'
           '?location=$locationId'
           '&key=$qweatherKey';
 
@@ -77,7 +85,7 @@ class TravelToolsService {
       final updateTime = weatherData['updateTime'];
 
       // 3. 获取未来3天天气预报
-      final forecastUrl = 'https://devapi.qweather.com/v7/weather/3d'
+      final forecastUrl = '$qweatherDomain/v7/weather/3d'
           '?location=$locationId'
           '&key=$qweatherKey';
 
@@ -132,7 +140,7 @@ class TravelToolsService {
     for (final city in cities) {
       try {
         // 获取城市ID
-        final locationUrl = 'https://geoapi.qweather.com/v2/city/lookup'
+        final locationUrl = '$qweatherDomain/geo/v2/city/lookup'
             '?location=${Uri.encodeComponent(city)}'
             '&key=$qweatherKey';
 
@@ -145,7 +153,7 @@ class TravelToolsService {
         final locationName = locData['location'][0]['name'];
 
         // 获取天气
-        final weatherUrl = 'https://devapi.qweather.com/v7/weather/now'
+        final weatherUrl = '$qweatherDomain/v7/weather/now'
             '?location=$locationId'
             '&key=$qweatherKey';
 
@@ -177,7 +185,7 @@ class TravelToolsService {
   Future<String> getAirQuality(String city) async {
     try {
       // 1. 获取城市ID
-      final locationUrl = 'https://geoapi.qweather.com/v2/city/lookup'
+      final locationUrl = '$qweatherDomain/geo/v2/city/lookup'
           '?location=${Uri.encodeComponent(city)}'
           '&key=$qweatherKey';
 
@@ -192,7 +200,7 @@ class TravelToolsService {
       final locationName = locData['location'][0]['name'];
 
       // 2. 获取空气质量
-      final airUrl = 'https://devapi.qweather.com/v7/air/now'
+      final airUrl = '$qweatherDomain/v7/air/now'
           '?location=$locationId'
           '&key=$qweatherKey';
 
