@@ -12,12 +12,14 @@ class ToolsTestPage extends StatefulWidget {
 class _ToolsTestPageState extends State<ToolsTestPage> {
   final TravelToolsService _toolsService = TravelToolsService();
   final TextEditingController _cityController = TextEditingController(text: '广州');
+  final TextEditingController _keywordController = TextEditingController(text: '广州塔');
   String _result = '';
   bool _isLoading = false;
 
   @override
   void dispose() {
     _cityController.dispose();
+    _keywordController.dispose();
     super.dispose();
   }
 
@@ -112,6 +114,40 @@ class _ToolsTestPageState extends State<ToolsTestPage> {
     });
   }
 
+  /// 搜索地点
+  Future<void> _searchPlace() async {
+    if (_keywordController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('请输入搜索关键词')),
+      );
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+      _result = '正在搜索中...';
+    });
+
+    try {
+      final city = _cityController.text.trim().isEmpty ? null : _cityController.text.trim();
+      final result = await _toolsService.searchPlace(
+        _keywordController.text.trim(),
+        city: city,
+      );
+      setState(() {
+        _result = result;
+      });
+    } catch (e) {
+      setState(() {
+        _result = '搜索失败：$e';
+      });
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -139,7 +175,7 @@ class _ToolsTestPageState extends State<ToolsTestPage> {
             ),
             const SizedBox(height: 8),
             Text(
-              '测试和风天气API和其他旅游工具',
+              '测试和风天气API、高德地图API等旅游工具',
               style: theme.textTheme.bodyMedium?.copyWith(
                 color: colorScheme.onSurface.withOpacity(0.6),
               ),
@@ -151,7 +187,7 @@ class _ToolsTestPageState extends State<ToolsTestPage> {
             TextField(
               controller: _cityController,
               decoration: InputDecoration(
-                labelText: '城市名称',
+                labelText: '城市名称（可选）',
                 hintText: '例如：广州、北京、上海',
                 border: const OutlineInputBorder(),
                 prefixIcon: const Icon(Icons.location_city),
@@ -161,6 +197,23 @@ class _ToolsTestPageState extends State<ToolsTestPage> {
                 ),
               ),
               onSubmitted: (_) => _queryWeather(),
+            ),
+            const SizedBox(height: 12),
+
+            // 关键词输入框（用于地点搜索）
+            TextField(
+              controller: _keywordController,
+              decoration: InputDecoration(
+                labelText: '搜索关键词',
+                hintText: '例如：广州塔、星巴克、酒店',
+                border: const OutlineInputBorder(),
+                prefixIcon: const Icon(Icons.search),
+                suffixIcon: IconButton(
+                  icon: const Icon(Icons.clear),
+                  onPressed: () => _keywordController.clear(),
+                ),
+              ),
+              onSubmitted: (_) => _searchPlace(),
             ),
             const SizedBox(height: 16),
 
@@ -203,6 +256,15 @@ class _ToolsTestPageState extends State<ToolsTestPage> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.green.shade100,
                     foregroundColor: Colors.green.shade900,
+                  ),
+                ),
+                ElevatedButton.icon(
+                  onPressed: _isLoading ? null : _searchPlace,
+                  icon: const Icon(Icons.place),
+                  label: const Text('搜索地点'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.orange.shade100,
+                    foregroundColor: Colors.orange.shade900,
                   ),
                 ),
               ],
@@ -302,7 +364,8 @@ class _ToolsTestPageState extends State<ToolsTestPage> {
                     '• 查询天气：获取指定城市的实时天气和3天预报\n'
                     '• 空气质量：查询城市空气质量指数(AQI)\n'
                     '• 多城市对比：对比北京、上海、广州、深圳天气\n'
-                    '• 当前时间：获取本地时间信息',
+                    '• 当前时间：获取本地时间信息\n'
+                    '• 搜索地点：使用高德地图搜索景点、餐厅、酒店等（城市可选）',
                     style: TextStyle(
                       fontSize: 12,
                       color: colorScheme.onSurface.withOpacity(0.7),

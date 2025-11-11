@@ -7,6 +7,8 @@ import '../models/assistant.dart';
 import '../../l10n/app_localizations.dart';
 import '../../utils/avatar_cache.dart';
 import '../../utils/app_directories.dart';
+import '../schemas/trip_generation_schema.dart';
+import '../schemas/travel_tools_functions.dart';
 
 class AssistantProvider extends ChangeNotifier {
   static const String _assistantsKey = 'assistants_v1';
@@ -78,7 +80,8 @@ class AssistantProvider extends ChangeNotifier {
         name: '去哪鸭小助手',
         systemPrompt: '你是去哪鸭（QuackTrip）的旅游规划助手，一只热情活泼的小黄鸭！你的口头禅是"嘎~"。'
             '你擅长帮助用户规划旅行、推荐景点、估算预算、解答旅游相关问题。'
-            '回答时要亲切友好，经常使用"嘎~"作为口头禅，让对话充满趣味性。',
+            '回答时要亲切友好，经常使用"嘎~"作为口头禅，让对话充满趣味性。'
+            '${TravelToolsFunctions.getToolsInstructionForPrompt()}',
         avatar: 'assets/QuacktripLogo.png',
         deletable: false,
         thinkingBudget: null,
@@ -94,14 +97,11 @@ class AssistantProvider extends ChangeNotifier {
     // 1) 去哪鸭默认助手
     _assistants.add(_defaultAssistant(l10n));
 
-    // 2) 旅游规划师助手
+    // 2) 旅游规划师助手（使用完整的JSON Schema）
     _assistants.add(Assistant(
       id: const Uuid().v4(),
       name: '旅游规划师 🗺️',
-      systemPrompt: '你是一位专业的旅游规划师，擅长根据用户的需求（预算、时间、偏好）设计完整的旅行计划。'
-          '你会提供详细的日程安排、景点推荐、交通建议、住宿推荐等。'
-          '请以JSON格式返回结构化的旅行计划，包含：目的地、日期、预算、景点列表、每日行程等信息。'
-          '记得使用"嘎~"作为口头禅！',
+      systemPrompt: TripGenerationSchema.systemPrompt + TravelToolsFunctions.getToolsInstructionForPrompt(),
       avatar: 'assets/QuacktripLogo.png',
       deletable: true,
       temperature: 0.7,
@@ -114,7 +114,8 @@ class AssistantProvider extends ChangeNotifier {
       name: '美食顾问 🍜',
       systemPrompt: '你是当地美食专家，熟悉各地特色美食、餐厅推荐、小吃攻略。'
           '你会根据用户的口味偏好、预算、用餐时间推荐最合适的美食选择。'
-          '介绍美食时要生动形象，让人垂涎欲滴！口头禅是"嘎~"。',
+          '介绍美食时要生动形象，让人垂涎欲滴！口头禅是"嘎~"。'
+          '${TravelToolsFunctions.getToolsInstructionForPrompt()}',
       avatar: 'assets/QuacktripLogo.png',
       deletable: true,
       temperature: 0.8,
@@ -127,7 +128,8 @@ class AssistantProvider extends ChangeNotifier {
       name: '文化讲解员 🏛️',
       systemPrompt: '你是历史文化专家，对各地的历史背景、文化传统、名胜古迹有深入了解。'
           '你会用生动有趣的方式讲解景点的历史故事、文化内涵、参观注意事项。'
-          '让用户在旅行中不仅能看到美景，更能理解背后的文化价值。别忘了"嘎~"！',
+          '让用户在旅行中不仅能看到美景，更能理解背后的文化价值。别忘了"嘎~"！'
+          '${TravelToolsFunctions.getToolsInstructionForPrompt()}',
       avatar: 'assets/QuacktripLogo.png',
       deletable: true,
       temperature: 0.7,
@@ -140,7 +142,8 @@ class AssistantProvider extends ChangeNotifier {
       name: '预算顾问 💰',
       systemPrompt: '你是旅游预算专家，擅长帮助用户合理规划旅游开支。'
           '你会分析交通、住宿、餐饮、门票、购物等各项费用，提供省钱攻略。'
-          '帮助用户在预算内获得最佳旅游体验。记得说"嘎~"哦！',
+          '帮助用户在预算内获得最佳旅游体验。记得说"嘎~"哦！'
+          '${TravelToolsFunctions.getToolsInstructionForPrompt()}',
       avatar: 'assets/QuacktripLogo.png',
       deletable: true,
       temperature: 0.6,

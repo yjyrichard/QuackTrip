@@ -1,6 +1,7 @@
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:crypto/crypto.dart';
+import 'package:flutter/foundation.dart';
 import '../../secrets/api_keys.dart';
 
 /// 旅游工具服务 - 集成第三方API
@@ -230,6 +231,118 @@ class TravelToolsService {
     }
   }
 
+  // ========== 高德地图 ==========
+  static const String amapKey = ApiKeys.amap;
+
+  /// 搜索地点（POI搜索）
+  /// [keyword] 搜索关键词，如：广州塔、星巴克
+  /// [city] 城市名称，如：广州（可选，不填则全国搜索）
+  /// [type] POI类型，如：景点、餐饮、酒店等（可选）
+  Future<String> searchPlace(String keyword, {String? city, String? type}) async {
+    try {
+      // 检查API key是否配置
+      if (amapKey.isEmpty || amapKey == 'YOUR_AMAP_KEY') {
+        return '❌ 高德地图API Key未配置\n请在 lib/secrets/api_keys.dart 中配置高德地图的API Key\n申请地址：https://lbs.amap.com/';
+      }
+
+      // 构建请求URL
+      String url = 'https://restapi.amap.com/v3/place/text'
+          '?keywords=${Uri.encodeComponent(keyword)}'
+          '&key=$amapKey'
+          '&output=json';
+
+      if (city != null && city.isNotEmpty) {
+        url += '&city=${Uri.encodeComponent(city)}';
+      }
+
+      if (type != null && type.isNotEmpty) {
+        url += '&types=$type';
+      }
+
+      debugPrint('🔍 搜索地点: $keyword (城市: ${city ?? "全国"})');
+      debugPrint('🌐 请求URL: $url');
+
+      final response = await http.get(Uri.parse(url));
+
+      if (response.statusCode != 200) {
+        return '❌ 请求失败，状态码：${response.statusCode}';
+      }
+
+      final data = jsonDecode(response.body);
+
+      if (data['status'] == '0') {
+        return '❌ 搜索失败：${data['info']}\nAPI Key可能无效或已过期';
+      }
+
+      final pois = data['pois'] as List?;
+      if (pois == null || pois.isEmpty) {
+        return '📍 未找到「$keyword」相关的地点信息\n建议：\n• 尝试使用更具体的关键词\n• 指定城市名称\n• 检查关键词拼写';
+      }
+
+      // 格式化输出前5个结果
+      final result = StringBuffer();
+      result.writeln('🔍 搜索结果：$keyword');
+      if (city != null) result.writeln('📍 城市：$city');
+      result.writeln('');
+
+      final displayCount = pois.length > 5 ? 5 : pois.length;
+      for (int i = 0; i < displayCount; i++) {
+        final poi = pois[i];
+        final name = poi['name'];
+        final address = poi['address'] ?? poi['pname'] ?? '';
+        final type = poi['type'] ?? '';
+        final location = poi['location'] ?? '';
+        final tel = poi['tel'] ?? '';
+
+        result.writeln('【${i + 1}】$name');
+        if (type.isNotEmpty) result.writeln('   类型：$type');
+        if (address.isNotEmpty) result.writeln('   地址：$address');
+        if (tel.isNotEmpty) result.writeln('   电话：$tel');
+        if (location.isNotEmpty) result.writeln('   坐标：$location');
+        result.writeln('');
+      }
+
+      if (pois.length > displayCount) {
+        result.writeln('... 还有 ${pois.length - displayCount} 个结果未显示');
+      }
+
+      result.writeln('💡 提示：点击地点可查看详细信息或导航');
+
+      return result.toString();
+    } catch (e) {
+      debugPrint('❌ 搜索地点失败: $e');
+      return '❌ 搜索地点失败：$e';
+    }
+  }
+
+  // ========== 货币转换 ==========
+
+  /// 货币汇率转换（待开发）
+  ///
+  /// [amount] 金额
+  /// [from] 源货币（如：USD, CNY, EUR）
+  /// [to] 目标货币
+  ///
+  /// TODO: 集成汇率查询API
+  /// 推荐API: https://api.exchangerate-api.com/v4/latest/
+  Future<String> convertCurrency(double amount, String from, String to) async {
+    return '''
+⚠️ 货币转换功能待开发
+
+计划功能：
+• 实时汇率查询
+• 支持主流货币（USD, CNY, EUR, JPY等）
+• 离线缓存汇率数据
+• 汇率走势图表
+
+推荐API：
+• ExchangeRate-API: https://www.exchangerate-api.com/
+• Fixer.io: https://fixer.io/
+
+嘎~ 这个功能还在规划中！
+''';
+  }
+
   // ========== 本地工具 ==========
 
   /// 获取当前时间
@@ -293,5 +406,290 @@ class TravelToolsService {
   /// 计算MD5（用于签名）
   String _md5(String input) {
     return md5.convert(utf8.encode(input)).toString();
+  }
+
+  // ========== 高德地图路径规划 ==========
+
+  /// 路线规划 - 综合出行方案
+  /// [origin] 起点名称或地址，如"广州塔"
+  /// [destination] 终点名称或地址，如"广州南站"
+  /// [city] 城市名称（可选），如"广州"
+  /// [mode] 出行方式：driving(驾车)、transit(公交/地铁)、walking(步行)、bicycling(骑行)，默认为transit
+  Future<String> getRoutePlan({
+    required String origin,
+    required String destination,
+    String? city,
+    String mode = 'transit',
+  }) async {
+    try {
+      // 检查API key是否配置
+      if (amapKey.isEmpty || amapKey == 'YOUR_AMAP_KEY_HERE') {
+        return '❌ 高德地图API Key未配置\n请在 lib/secrets/api_keys.dart 中配置高德地图的API Key\n申请地址：https://lbs.amap.com/';
+      }
+
+      debugPrint('🗺️ 路线规划: $origin -> $destination (方式: $mode)');
+
+      // 1. 获取起点和终点的坐标
+      final originCoords = await _geocodePlace(origin, city);
+      if (originCoords == null) {
+        return '❌ 未找到起点：$origin';
+      }
+
+      final destCoords = await _geocodePlace(destination, city);
+      if (destCoords == null) {
+        return '❌ 未找到终点：$destination';
+      }
+
+      debugPrint('📍 起点坐标: $originCoords');
+      debugPrint('📍 终点坐标: $destCoords');
+
+      // 2. 根据出行方式调用不同的路径规划API
+      switch (mode.toLowerCase()) {
+        case 'driving':
+          return await _getDrivingRoute(originCoords, destCoords, origin, destination);
+        case 'walking':
+          return await _getWalkingRoute(originCoords, destCoords, origin, destination);
+        case 'bicycling':
+          return await _getBicyclingRoute(originCoords, destCoords, origin, destination);
+        case 'transit':
+        default:
+          return await _getTransitRoute(originCoords, destCoords, origin, destination, city ?? '广州');
+      }
+    } catch (e) {
+      debugPrint('❌ 路线规划失败: $e');
+      return '❌ 路线规划失败：$e';
+    }
+  }
+
+  /// 地点地理编码 - 将地点名称转换为坐标
+  Future<String?> _geocodePlace(String place, String? city) async {
+    try {
+      final cityParam = city != null ? '&city=${Uri.encodeComponent(city)}' : '';
+      final url = 'https://restapi.amap.com/v3/geocode/geo'
+          '?address=${Uri.encodeComponent(place)}'
+          '$cityParam'
+          '&key=$amapKey';
+
+      final response = await http.get(Uri.parse(url));
+      if (response.statusCode != 200) return null;
+
+      final data = jsonDecode(response.body);
+      if (data['status'] == '1' && data['geocodes'] != null && data['geocodes'].isNotEmpty) {
+        return data['geocodes'][0]['location'];
+      }
+      return null;
+    } catch (e) {
+      debugPrint('❌ 地理编码失败: $e');
+      return null;
+    }
+  }
+
+  /// 公交/地铁路线规划
+  Future<String> _getTransitRoute(String origin, String dest, String originName, String destName, String city) async {
+    try {
+      final url = 'https://restapi.amap.com/v3/direction/transit/integrated'
+          '?origin=$origin'
+          '&destination=$dest'
+          '&city=${Uri.encodeComponent(city)}'
+          '&output=json'
+          '&key=$amapKey';
+
+      debugPrint('🌐 公交路线URL: $url');
+
+      final response = await http.get(Uri.parse(url));
+      if (response.statusCode != 200) {
+        return '❌ API请求失败，状态码：${response.statusCode}';
+      }
+
+      final data = jsonDecode(response.body);
+      if (data['status'] != '1' || data['route'] == null) {
+        return '❌ 未找到公交路线';
+      }
+
+      final route = data['route'];
+      final transits = route['transits'] as List?;
+      if (transits == null || transits.isEmpty) {
+        return '❌ 未找到公交路线';
+      }
+
+      // 格式化输出前3个路线方案
+      final buffer = StringBuffer();
+      buffer.writeln('🗺️ 从 $originName 到 $destName 的公交/地铁路线：\n');
+
+      int count = 0;
+      for (final transit in transits) {
+        if (count >= 3) break; // 只显示前3个方案
+        count++;
+
+        final duration = (transit['duration'] as int) ~/ 60; // 转换为分钟
+        final distance = ((transit['distance'] as int) / 1000).toStringAsFixed(1); // 转换为公里
+        final cost = transit['cost'] ?? 0;
+
+        buffer.writeln('【方案$count】用时约${duration}分钟，距离${distance}公里，票价¥$cost');
+
+        final segments = transit['segments'] as List?;
+        if (segments != null) {
+          for (int i = 0; i < segments.length; i++) {
+            final seg = segments[i];
+            final walking = seg['walking'];
+            final bus = seg['bus'];
+
+            // 步行段
+            if (walking != null && walking['distance'] != null) {
+              final walkDist = (walking['distance'] as int);
+              if (walkDist > 0) {
+                buffer.writeln('  ${i + 1}. 步行 ${walkDist}米');
+              }
+            }
+
+            // 公交/地铁段
+            if (bus != null && bus['buslines'] != null) {
+              final buslines = bus['buslines'] as List;
+              for (final busline in buslines) {
+                final name = busline['name'] ?? '';
+                final departure = busline['departure_stop']?['name'] ?? '';
+                final arrival = busline['arrival_stop']?['name'] ?? '';
+                final viaNum = busline['via_num'] ?? 0;
+
+                if (name.isNotEmpty) {
+                  buffer.writeln('  ${i + 1}. 乘坐 $name');
+                  buffer.writeln('     从 $departure 上车，经过${viaNum}站，到 $arrival 下车');
+                }
+              }
+            }
+          }
+        }
+
+        buffer.writeln('');
+      }
+
+      buffer.writeln('提示：具体班次时间请以实际为准。嘎~ 🦆');
+      return buffer.toString();
+    } catch (e) {
+      debugPrint('❌ 公交路线规划失败: $e');
+      return '❌ 公交路线规划失败：$e';
+    }
+  }
+
+  /// 驾车路线规划
+  Future<String> _getDrivingRoute(String origin, String dest, String originName, String destName) async {
+    try {
+      final url = 'https://restapi.amap.com/v3/direction/driving'
+          '?origin=$origin'
+          '&destination=$dest'
+          '&output=json'
+          '&key=$amapKey';
+
+      final response = await http.get(Uri.parse(url));
+      if (response.statusCode != 200) {
+        return '❌ API请求失败';
+      }
+
+      final data = jsonDecode(response.body);
+      if (data['status'] != '1' || data['route'] == null) {
+        return '❌ 未找到驾车路线';
+      }
+
+      final route = data['route'];
+      final paths = route['paths'] as List?;
+      if (paths == null || paths.isEmpty) {
+        return '❌ 未找到驾车路线';
+      }
+
+      final path = paths[0];
+      final distance = ((path['distance'] as int) / 1000).toStringAsFixed(1);
+      final duration = (path['duration'] as int) ~/ 60;
+      final tolls = path['tolls'] ?? 0;
+      final tollDistance = ((path['toll_distance'] as int?) ?? 0) / 1000;
+
+      final buffer = StringBuffer();
+      buffer.writeln('🚗 从 $originName 到 $destName 的驾车路线：\n');
+      buffer.writeln('距离：${distance}公里');
+      buffer.writeln('预计用时：${duration}分钟');
+      if (tolls > 0) {
+        buffer.writeln('过路费：¥$tolls（收费路段${tollDistance.toStringAsFixed(1)}公里）');
+      }
+      buffer.writeln('\n具体导航请使用地图APP。嘎~ 🦆');
+
+      return buffer.toString();
+    } catch (e) {
+      return '❌ 驾车路线规划失败：$e';
+    }
+  }
+
+  /// 步行路线规划
+  Future<String> _getWalkingRoute(String origin, String dest, String originName, String destName) async {
+    try {
+      final url = 'https://restapi.amap.com/v3/direction/walking'
+          '?origin=$origin'
+          '&destination=$dest'
+          '&output=json'
+          '&key=$amapKey';
+
+      final response = await http.get(Uri.parse(url));
+      if (response.statusCode != 200) {
+        return '❌ API请求失败';
+      }
+
+      final data = jsonDecode(response.body);
+      if (data['status'] != '1' || data['route'] == null) {
+        return '❌ 未找到步行路线';
+      }
+
+      final route = data['route'];
+      final paths = route['paths'] as List?;
+      if (paths == null || paths.isEmpty) {
+        return '❌ 未找到步行路线';
+      }
+
+      final path = paths[0];
+      final distance = ((path['distance'] as int) / 1000).toStringAsFixed(2);
+      final duration = (path['duration'] as int) ~/ 60;
+
+      return '🚶 从 $originName 到 $destName 的步行路线：\n'
+          '\n距离：${distance}公里'
+          '\n预计用时：${duration}分钟'
+          '\n\n建议使用地图APP查看详细路线。嘎~ 🦆';
+    } catch (e) {
+      return '❌ 步行路线规划失败：$e';
+    }
+  }
+
+  /// 骑行路线规划
+  Future<String> _getBicyclingRoute(String origin, String dest, String originName, String destName) async {
+    try {
+      final url = 'https://restapi.amap.com/v4/direction/bicycling'
+          '?origin=$origin'
+          '&destination=$dest'
+          '&output=json'
+          '&key=$amapKey';
+
+      final response = await http.get(Uri.parse(url));
+      if (response.statusCode != 200) {
+        return '❌ API请求失败';
+      }
+
+      final data = jsonDecode(response.body);
+      if (data['status'] != '1' || data['data'] == null) {
+        return '❌ 未找到骑行路线';
+      }
+
+      final routeData = data['data'];
+      final paths = routeData['paths'] as List?;
+      if (paths == null || paths.isEmpty) {
+        return '❌ 未找到骑行路线';
+      }
+
+      final path = paths[0];
+      final distance = ((path['distance'] as int) / 1000).toStringAsFixed(2);
+      final duration = (path['duration'] as int) ~/ 60;
+
+      return '🚴 从 $originName 到 $destName 的骑行路线：\n'
+          '\n距离：${distance}公里'
+          '\n预计用时：${duration}分钟'
+          '\n\n建议使用地图APP查看详细路线。嘎~ 🦆';
+    } catch (e) {
+      return '❌ 骑行路线规划失败：$e';
+    }
   }
 }

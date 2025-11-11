@@ -74,6 +74,10 @@ import '../../quick_phrase/pages/quick_phrases_page.dart';
 import '../../../shared/widgets/ios_checkbox.dart';
 // import '../../../desktop/quick_phrase_popover.dart'; // 桌面功能已移除
 import '../../../utils/app_directories.dart';
+import '../../../core/services/trip_generator_service.dart';
+import '../widgets/trip_save_dialog.dart';
+import '../../../core/schemas/travel_tools_functions.dart';
+import '../../../core/services/travel_tools_call_handler.dart';
 
 
 class HomePage extends StatefulWidget {
@@ -107,6 +111,8 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
   double _inputBarHeight = 72;
 
   late ChatService _chatService;
+  late final TripGeneratorService _tripGenerator;
+  late final TravelToolsCallHandler _travelToolsHandler;
   Conversation? _currentConversation;
   List<ChatMessage> _messages = [];
   // Support concurrent generation per conversation
@@ -717,6 +723,10 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     _convoFadeController.value = 1.0;
     // Use the provided ChatService instance
     _chatService = context.read<ChatService>();
+    // Initialize trip generator service
+    _tripGenerator = TripGeneratorService();
+    // Initialize travel tools handler
+    _travelToolsHandler = TravelToolsCallHandler();
     _initChat();
     _scrollController.addListener(_onScrollControllerChanged);
     WidgetsBinding.instance.addPostFrameCallback((_) => _measureInputBar());
@@ -1638,6 +1648,11 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
         }));
       }
 
+      // Travel tools (weather, air quality, etc.)
+      if (supportsTools) {
+        toolDefs.addAll(TravelToolsFunctions.getAllTools());
+      }
+
       if (toolDefs.isNotEmpty) {
         onToolCall = (name, args) async {
           if (name == SearchToolService.toolName && settings.searchEnabled) {
@@ -1666,6 +1681,12 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                 return ok ? 'deleted' : '';
               }
             } catch (_) {}
+          }
+          // Travel tools (weather, air quality, etc.)
+          if (name == 'get_weather' || name == 'get_air_quality' ||
+              name == 'compare_weather' || name == 'get_current_time' ||
+              name == 'search_place' || name == 'get_route_plan') {
+            return await _travelToolsHandler.handleToolCall(name, args);
           }
           // Fallback to MCP tools
           final text = await toolSvc.callToolTextForAssistant(
@@ -1778,6 +1799,18 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
             reasoningSegmentsJson: _serializeReasoningSegments(segments),
           );
         }
+
+        // Check for trip plan JSON in AI response
+        if (_tripGenerator.containsTripPlanJson(processedContent)) {
+          final success = _tripGenerator.parseFromAiResponse(processedContent);
+          if (success && mounted) {
+            // Show save dialog
+            TripSaveDialog.show(context, _tripGenerator, onSaved: () {
+              // Optionally refresh trip list if needed
+            });
+          }
+        }
+
         if (shouldGenerateTitle) {
           _maybeGenerateTitleFor(assistantMessage.conversationId);
         }
@@ -2585,6 +2618,10 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
           };
         }));
       }
+      // Travel tools (weather, air quality, etc.)
+      if (_isToolModel(providerKey, modelId)) {
+        toolDefs.addAll(TravelToolsFunctions.getAllTools());
+      }
       if (toolDefs.isNotEmpty) {
         onToolCall = (name, args) async {
           if (name == SearchToolService.toolName && settings.searchEnabled) {
@@ -2613,6 +2650,12 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                 return ok ? 'deleted' : '';
               }
             } catch (_) {}
+          }
+          // Travel tools (weather, air quality, etc.)
+          if (name == 'get_weather' || name == 'get_air_quality' ||
+              name == 'compare_weather' || name == 'get_current_time' ||
+              name == 'search_place' || name == 'get_route_plan') {
+            return await _travelToolsHandler.handleToolCall(name, args);
           }
           final text = await toolSvc.callToolTextForAssistant(
             mcp,
@@ -2692,6 +2735,17 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
         _reasoningSegments[assistantMessage.id] = segments;
         if (mounted) setState(() {});
         await _chatService.updateMessage(assistantMessage.id, reasoningSegmentsJson: _serializeReasoningSegments(segments));
+      }
+
+      // Check for trip plan JSON in AI response
+      if (_tripGenerator.containsTripPlanJson(processedContent)) {
+        final success = _tripGenerator.parseFromAiResponse(processedContent);
+        if (success && mounted) {
+          // Show save dialog
+          TripSaveDialog.show(context, _tripGenerator, onSaved: () {
+            // Optionally refresh trip list if needed
+          });
+        }
       }
     }
 
